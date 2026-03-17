@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #18181b;
+  --background: #fafafa;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+/* Visible focus for accessibility */
+*:focus-visible {
+  outline: 2px solid #0c8ee6;
+  outline-offset: 2px;
+}

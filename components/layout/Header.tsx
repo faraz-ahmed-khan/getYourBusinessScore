@@ -1,5 +1,5 @@
 'use client';
-
+import Image from "next/image";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -13,9 +13,16 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-semibold text-neutral-800">
-          GYBS
-        </Link>
+          <Link href="/">
+            <div className="relative w-[120px] h-[60px] sm:w-[140px] sm:h-[70px] md:w-[160px] md:h-[80px]">
+              <Image
+                src="/images/logo.png"
+                alt="GYBS Logo"
+                fill
+                className="object-contain"
+              />
+           </div>
+          </Link>
         {!isResultsPage && (
           <Link
             href="/assessment"

@@ -3,17 +3,49 @@
 @tailwind utilities;
 
 :root {
-  --foreground: #18181b;
-  --background: #fafafa;
+  --foreground: #0f172a;
+  --background: #f8fafc;
+  --color-primary: #0057b8;
+  --color-primary-dark: #003d8f;
+  --color-primary-light: #eff6ff;
+  --color-primary-glow: rgba(0, 87, 184, 0.12);
+  --color-surface: #ffffff;
+  --color-surface-2: #f8fafc;
+  --color-surface-3: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-active: #0057b8;
+  --color-text-primary: #0f172a;
+  --color-text-body: #334155;
+  --color-text-muted: #64748b;
+  --color-text-placeholder: #94a3b8;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
 }
 
 body {
-  color: var(--foreground);
+  color: var(--color-text-body);
   background: var(--background);
 }
 
 /* Visible focus for accessibility */
 *:focus-visible {
-  outline: 2px solid #0c8ee6;
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+@keyframes hero-float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.hero-float {
+  animation: hero-float 4s ease-in-out infinite;
 }

@@ -6,9 +6,9 @@ interface ProgressBarProps {
 export function ProgressBar({ current, total }: ProgressBarProps) {
   const pct = total > 0 ? Math.min(100, (current / total) * 100) : 0;
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200">
+    <div className="h-1 w-full overflow-hidden rounded-full bg-[color:var(--color-border)]">
       <div
-        className="h-full rounded-full bg-primary-600 transition-all duration-300"
+        className="h-full rounded-full bg-[color:var(--color-primary)] transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
         style={{ width: `${pct}%` }}
         role="progressbar"
         aria-valuenow={current}

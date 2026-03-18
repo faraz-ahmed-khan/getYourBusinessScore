@@ -28,44 +28,62 @@ export function AssessmentFlow({
   const isLastStep = step === totalSteps;
 
   return (
-    <Card className="space-y-6">
-      <div>
-        <p className="text-sm font-medium text-neutral-500">
-          Step {step} of {totalSteps}
-        </p>
-        <h2 className="mt-1 text-xl font-semibold text-neutral-900">{stepTitle}</h2>
-        <div className="mt-3">
+    <div className="mx-auto max-w-xl">
+      <Card className="space-y-8 bg-[color:var(--color-surface)] px-6 py-7 sm:px-8 sm:py-8">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-[13px] text-[color:var(--color-text-muted)]">
+            <span>
+              Question {step} of {totalSteps}
+            </span>
+            <span>{Math.round((step / totalSteps) * 100)}% complete</span>
+          </div>
           <ProgressBar current={step} total={totalSteps} />
+          <div className="mt-2 space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--color-primary)]">
+              Intake question
+            </p>
+            <h2 className="text-[1.6rem] font-semibold leading-snug text-[color:var(--color-text-primary)]">
+              {stepTitle}
+            </h2>
+          </div>
         </div>
-      </div>
 
-      <div className="min-h-[200px]">{children}</div>
+        <div className="min-h-[260px] pt-2">{children}</div>
 
-      {errors._form && (
-        <p className="text-sm text-red-600" role="alert">
-          {errors._form}
-        </p>
-      )}
-
-      <div className="flex flex-wrap gap-3 border-t border-neutral-200 pt-4">
-        {onPrevious && (
-          <Button variant="outline" onClick={onPrevious} disabled={submitting}>
-            Previous
-          </Button>
+        {errors._form && (
+          <p className="text-sm text-[color:var(--color-danger)]" role="alert">
+            {errors._form}
+          </p>
         )}
-        <div className="flex-1" />
-        {isLastStep && onSubmit ? (
-          <Button onClick={onSubmit} disabled={submitting}>
-            {submitting ? 'Submitting…' : 'Submit and generate score'}
-          </Button>
-        ) : (
-          onNext && (
-            <Button onClick={onNext} disabled={submitting}>
-              Next
-            </Button>
-          )
-        )}
-      </div>
-    </Card>
+
+        <div className="mt-4 flex items-center justify-between border-t border-[color:var(--color-border)] pt-4">
+          {onPrevious ? (
+            <button
+              type="button"
+              onClick={onPrevious}
+              className="text-sm font-medium text-[color:var(--color-text-muted)] transition-colors hover:text-[color:var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              disabled={submitting}
+            >
+              Back
+            </button>
+          ) : (
+            <span />
+          )}
+          <div className="flex items-center gap-3">
+            {isLastStep && onSubmit ? (
+              <Button onClick={onSubmit} disabled={submitting}>
+                {submitting ? 'Submitting…' : 'Submit and generate score'}
+              </Button>
+            ) : (
+              onNext && (
+                <Button onClick={onNext} disabled={submitting}>
+                  Continue →
+                </Button>
+              )
+            )}
+          </div>
+        </div>
+      </Card>
+    </div>
   );
 }

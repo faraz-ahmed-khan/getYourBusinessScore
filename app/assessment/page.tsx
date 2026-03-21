@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import type { IntakePayload, SubmitResponse } from '@/lib/types';
+import type { IntakePayload } from '@/lib/types';
 import { getEmptyIntakePayload } from '@/lib/mock-data';
 import { ASSESSMENT_STEP_COUNT } from '@/lib/constants';
 import { validateStep, validateFullIntake } from '@/lib/validation';
@@ -102,8 +102,7 @@ export default function AssessmentPage() {
         setSubmitting(false);
         return;
       }
-      const result = data as SubmitResponse;
-      sessionStorage.setItem('gybs_results', JSON.stringify(result));
+      sessionStorage.setItem('gybs_record_id', data.record_id);
       router.push('/results');
     } catch {
       setErrors({ _form: 'Something went wrong. Please try again.' });

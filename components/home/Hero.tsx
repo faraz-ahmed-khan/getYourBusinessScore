@@ -7,6 +7,7 @@ import Link from 'next/link';
 export function Hero() {
   return (
     <section
+    
       className="relative overflow-hidden border-b border-[color:var(--color-border)]"
       style={{
         background:

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LEVEL_1_ROUTES } from '@/lib/constants';
 
 /**
  * Homepage hero — business-only readiness kiosk, diagnostic entry point.
@@ -56,12 +57,22 @@ export function Hero() {
           </div>
 
           <div className="mt-10 flex flex-col items-center gap-2 sm:items-start">
-            <Link
-              href="/assessment"
-              className="inline-flex items-center justify-center rounded-[10px] bg-[color:var(--color-primary)] px-10 py-3.5 text-[15px] font-semibold text-white shadow-[0_16px_40px_rgba(0,87,184,0.32)] transition-transform transition-shadow duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-0.5 hover:bg-[color:var(--color-primary-dark)] hover:shadow-[0_22px_60px_rgba(0,87,184,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-            >
-              Get Your Business Score
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/assessment"
+                className="inline-flex items-center justify-center rounded-[10px] bg-[color:var(--color-primary)] px-10 py-3.5 text-[15px] font-semibold text-white shadow-[0_16px_40px_rgba(0,87,184,0.32)] transition-transform transition-shadow duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-0.5 hover:bg-[color:var(--color-primary-dark)] hover:shadow-[0_22px_60px_rgba(0,87,184,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              >
+                Get Your Business Score
+              </Link>
+              <a
+                href={LEVEL_1_ROUTES.subscribe}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-[10px] border border-[color:var(--color-border-active)] bg-white px-6 py-3.5 text-[15px] font-semibold text-[color:var(--color-primary)] transition-colors hover:bg-[color:var(--color-primary-light)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              >
+                Subscribe
+              </a>
+            </div>
             <p className="text-xs text-[color:var(--color-text-muted)] sm:text-left">
               Takes about 5–7 minutes. Instant score when you finish.
             </p>

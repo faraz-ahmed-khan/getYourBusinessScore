@@ -4,12 +4,12 @@
  */
 
 // Exactly 3 readiness lanes — no fourth card, no Review Score card.
-// Redirect URLs point to Vercel deployments.
+// Canonical production domains (mock prototype uses same URLs).
 export const READINESS_CARDS = [
   {
     id: 'pathway',
     title: 'Begin Your Readiness Pathway',
-    destination: 'https://misocniusa.vercel.app',
+    destination: 'https://misconiusa.com',
     description:
       'Enter the official readiness system operated by the Prime Agent. Subscribe, unlock your pathway, and begin completing the requirements needed to access customer, product, and supplier opportunities.',
     ctaText: 'Go to MisconiUSA.com',
@@ -17,7 +17,7 @@ export const READINESS_CARDS = [
   {
     id: 'learn',
     title: 'Learn About Readiness',
-    destination: 'https://misconi-usa-network.vercel.app',
+    destination: 'https://misconiusanetwork.com',
     description:
       'Explore readiness concepts, pathway overviews, and ecosystem education. Understand how the readiness system works before entering your pathway.',
     ctaText: 'Visit MisconiUSANetwork.com',
@@ -34,8 +34,8 @@ export const READINESS_CARDS = [
 
 // Level 1 routing targets (intake only; no readiness lanes at Level 1).
 export const LEVEL_1_ROUTES = {
-  subscribe: 'https://misocniusa.vercel.app/subscribe',
-  education: 'https://misconi-usa-network.vercel.app',
+  subscribe: 'https://misconiusa.com/subscribe',
+  education: 'https://misconiusanetwork.com',
   training: 'https://sbaready.org',
 } as const;
 

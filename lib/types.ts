@@ -116,6 +116,14 @@ export interface SubmitResponse {
   strengths: string[];
   gaps: string[];
   recommendations: string[];
+  resultOverview: {
+    recommendedLane: string;
+    assignedPack: string;
+    correctionList: string[];
+    requiredDocuments: string[];
+    missingInformation: string[];
+    upgradePathway: string;
+  };
   readinessCards: ReadinessCard[];
   metadata: {
     businessName: string;
@@ -131,4 +139,15 @@ export interface SaveDraftRequest {
 export interface SaveDraftResponse {
   success: boolean;
   payload: Partial<IntakePayload>;
+}
+
+/** Mock upload API response — `/api/upload/mock` */
+export interface UploadMockFileMeta {
+  name: string;
+  uploadedAt: string;
+}
+
+export interface UploadMockResponse {
+  success: boolean;
+  uploadedFiles: UploadMockFileMeta[];
 }

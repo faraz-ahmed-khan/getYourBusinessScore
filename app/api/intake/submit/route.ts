@@ -5,9 +5,9 @@
  */
 
 import { NextResponse } from 'next/server';
-import type { IntakePayload, SubmitResponse } from '@/lib/types';
+import type { IntakePayload } from '@/lib/types';
 import { validateFullIntake } from '@/lib/validation';
-import { buildSubmitResponse } from '@/lib/scoring';
+import { buildMockSubmitResponse } from '@/lib/mock-result';
 import { getEmptyIntakePayload } from '@/lib/mock-data';
 
 function mergePayload(body: Partial<IntakePayload>): IntakePayload {
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     // Dummy backend: score generation is temporary demo logic; replace with Zoho or production controller.
-    const response = buildSubmitResponse(payload) as SubmitResponse;
+    const response = buildMockSubmitResponse(payload);
 
     return NextResponse.json(response);
   } catch (e) {

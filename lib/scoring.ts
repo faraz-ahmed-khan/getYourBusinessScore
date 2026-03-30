@@ -7,8 +7,6 @@
 import type { IntakePayload, ReadinessCard, ReadinessLevelLabel } from './types';
 import { READINESS_CARDS } from './constants';
 
-const READINESS_LEVELS: ReadinessLevelLabel[] = ['Emerging', 'Developing', 'Ready', 'Advanced'];
-
 export function computeBusinessScore(payload: IntakePayload): number {
   let score = 50; // base
 
@@ -100,6 +98,66 @@ export function getRecommendations(payload: IntakePayload, readinessLevel: Readi
   return recs;
 }
 
+function buildResultOverview(payload: IntakePayload, readinessLevel: ReadinessLevelLabel): {
+  recommendedLane: string;
+  assignedPack: string;
+  correctionList: string[];
+  requiredDocuments: string[];
+  missingInformation: string[];
+  upgradePathway: string;
+} {
+  const docsHave = payload.pack5_readiness.documentsHave;
+  /** Mock only: template list for display; replace with backend rules. */
+  const requiredDocuments = ['Business license', 'EIN', 'Bank statements'];
+  const missingInformation: string[] = [];
+  const correctionList: string[] = [];
+
+  if (!payload.pack5_readiness.documentsNeed.trim()) {
+    missingInformation.push('Optional: add which documents you still need for clearer next steps.');
+  }
+  if ((payload.pack8_documents?.uploadedFiles?.length ?? 0) === 0) {
+    missingInformation.push('Optional: attach sample documents in a future intake pass (upload is mocked here).');
+  }
+
+  if (docsHave.length === 0) {
+    correctionList.push('Gather or upload core business documents to strengthen readiness classification.');
+  }
+  if (payload.pack5_readiness.howPreparedFeel === 'Not prepared' || payload.pack5_readiness.howPreparedFeel === 'Somewhat prepared') {
+    correctionList.push('Prioritize foundational readiness before pursuing larger opportunities.');
+  }
+  if (payload.pack5_readiness.howImproveReadiness === 'Subscription') {
+    correctionList.push('Align subscription onboarding with operational pathway requirements on MisconiUSA.com when ready.');
+  }
+
+  const recommendedLane =
+    readinessLevel === 'Ready' || readinessLevel === 'Advanced'
+      ? 'Begin Your Readiness Pathway (operational — MisconiUSA.com)'
+      : readinessLevel === 'Developing'
+        ? 'Learn About Readiness (education — MisconiUSANetwork.com)'
+        : 'Get SBA-Aligned Training & Support (SBAReady.org)';
+
+  const assignedPack =
+    payload.pack5_readiness.howImproveReadiness === 'Subscription'
+      ? 'Subscription-aligned readiness pack (mock)'
+      : payload.pack5_readiness.howImproveReadiness === 'Assisted'
+        ? 'Assisted readiness pack (mock)'
+        : 'Self-guided readiness pack (mock)';
+
+  const upgradePathway =
+    readinessLevel === 'Advanced'
+      ? 'Operational activation: complete pathway steps on MisconiUSA.com to unlock opportunity eligibility.'
+      : 'Close gaps above, then re-run intake or proceed to training/education before operational subscription.';
+
+  return {
+    recommendedLane,
+    assignedPack,
+    correctionList,
+    requiredDocuments,
+    missingInformation,
+    upgradePathway,
+  };
+}
+
 export function buildSubmitResponse(payload: IntakePayload): {
   ubid: string;
   businessScore: number;
@@ -107,6 +165,14 @@ export function buildSubmitResponse(payload: IntakePayload): {
   strengths: string[];
   gaps: string[];
   recommendations: string[];
+  resultOverview: {
+    recommendedLane: string;
+    assignedPack: string;
+    correctionList: string[];
+    requiredDocuments: string[];
+    missingInformation: string[];
+    upgradePathway: string;
+  };
   readinessCards: ReadinessCard[];
   metadata: { businessName: string; submittedAt: string };
 } {
@@ -126,6 +192,7 @@ export function buildSubmitResponse(payload: IntakePayload): {
     strengths: getStrengths(payload, businessScore),
     gaps: getGaps(payload, businessScore),
     recommendations: getRecommendations(payload, readinessLevel),
+    resultOverview: buildResultOverview(payload, readinessLevel),
     readinessCards,
     metadata: {
       businessName: payload.pack1_identity.businessName?.trim() || 'Business',

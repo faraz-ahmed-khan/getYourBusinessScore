@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { IntakePayload, SubmitResponse } from '@/lib/types';
 import { getEmptyIntakePayload } from '@/lib/mock-data';
 import { ASSESSMENT_STEP_COUNT } from '@/lib/constants';
 import { validateStep, validateFullIntake } from '@/lib/validation';
+import { buildIntakeSubmitPayload } from '@/lib/payload-builder';
+import { STEP_INTROS } from '@/lib/assessment-copy';
+import { normalizeResultResponse } from '@/lib/result-model';
 import { AssessmentFlow } from '@/components/assessment/AssessmentFlow';
 import { Step1Identity } from '@/components/assessment/steps/Step1Identity';
 import { Step2Permissions } from '@/components/assessment/steps/Step2Permissions';
@@ -33,6 +36,44 @@ export default function AssessmentPage() {
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const rawPayload = sessionStorage.getItem('gybs_intake_payload');
+    const rawStep = sessionStorage.getItem('gybs_intake_step');
+    if (rawPayload) {
+      try {
+        const parsed = JSON.parse(rawPayload) as IntakePayload;
+        setPayload(parsed);
+      } catch {
+        // ignore invalid session payload
+      }
+    }
+    if (rawStep) {
+      const parsedStep = Number(rawStep);
+      if (Number.isFinite(parsedStep) && parsedStep >= 1 && parsedStep <= ASSESSMENT_STEP_COUNT) {
+        setStep(parsedStep);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('gybs_intake_payload', JSON.stringify(payload));
+  }, [payload]);
+
+  useEffect(() => {
+    sessionStorage.setItem('gybs_intake_step', String(step));
+  }, [step]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      fetch('/api/intake/save-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ step, data: payload }),
+      }).catch(() => {});
+    }, 900);
+    return () => clearTimeout(t);
+  }, [payload, step]);
 
   const update = useCallback((partial: Partial<IntakePayload>) => {
     setPayload((p) => ({
@@ -89,10 +130,11 @@ export default function AssessmentPage() {
     setSubmitting(true);
     setErrors({});
     try {
+      const submitPayload = buildIntakeSubmitPayload(payload);
       const res = await fetch('/api/intake/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(submitPayload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -102,8 +144,10 @@ export default function AssessmentPage() {
         setSubmitting(false);
         return;
       }
-      const result = data as SubmitResponse;
+      const result = normalizeResultResponse(data as SubmitResponse);
       sessionStorage.setItem('gybs_results', JSON.stringify(result));
+      sessionStorage.removeItem('gybs_intake_payload');
+      sessionStorage.removeItem('gybs_intake_step');
       router.push('/results');
     } catch {
       setErrors({ _form: 'Something went wrong. Please try again.' });
@@ -120,6 +164,7 @@ export default function AssessmentPage() {
         step={step}
         totalSteps={ASSESSMENT_STEP_COUNT}
         stepTitle={stepTitle}
+        stepIntro={STEP_INTROS[step]}
         onPrevious={step > 1 ? () => setStep((s) => s - 1) : undefined}
         onNext={step < ASSESSMENT_STEP_COUNT ? goNext : undefined}
         onSubmit={step === ASSESSMENT_STEP_COUNT ? handleSubmit : undefined}

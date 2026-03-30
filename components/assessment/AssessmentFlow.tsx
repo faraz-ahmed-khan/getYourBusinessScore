@@ -6,6 +6,8 @@ interface AssessmentFlowProps {
   step: number;
   totalSteps: number;
   stepTitle: string;
+  /** Governed-intake framing; separate from field labels. */
+  stepIntro?: string;
   onPrevious?: () => void;
   onNext?: () => void;
   onSubmit?: () => void;
@@ -18,6 +20,7 @@ export function AssessmentFlow({
   step,
   totalSteps,
   stepTitle,
+  stepIntro,
   onPrevious,
   onNext,
   onSubmit,
@@ -45,6 +48,9 @@ export function AssessmentFlow({
             <h2 className="text-[1.6rem] font-semibold leading-snug text-[color:var(--color-text-primary)]">
               {stepTitle}
             </h2>
+            {stepIntro && (
+              <p className="text-[13px] leading-relaxed text-[color:var(--color-text-muted)]">{stepIntro}</p>
+            )}
           </div>
         </div>
 

@@ -3,49 +3,67 @@
 @tailwind utilities;
 
 :root {
-  --foreground: #0f172a;
-  --background: #f8fafc;
-  --color-primary: #0057b8;
-  --color-primary-dark: #003d8f;
+  --gybs-navy: #1b3a6b;
+  --gybs-blue: #2e6be6;
+  --gybs-accent: #f59e0b;
+  --gybs-success: #10b981;
+  --gybs-danger: #ef4444;
+  --gybs-light: #f8faff;
+  --gybs-white: #ffffff;
+  --gybs-ink: #0f172a;
+  --gybs-body: #334155;
+  --gybs-muted: #64748b;
+  --gybs-border: #e2e8f0;
+  /* Legacy aliases used by any remaining references */
+  --color-primary: #2e6be6;
+  --color-primary-dark: #1b3a6b;
   --color-primary-light: #eff6ff;
-  --color-primary-glow: rgba(0, 87, 184, 0.12);
-  --color-surface: #ffffff;
-  --color-surface-2: #f8fafc;
-  --color-surface-3: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-border-active: #0057b8;
   --color-text-primary: #0f172a;
   --color-text-body: #334155;
   --color-text-muted: #64748b;
-  --color-text-placeholder: #94a3b8;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  --color-border: #e2e8f0;
+  --color-surface: #ffffff;
 }
 
 body {
-  color: var(--color-text-body);
-  background: var(--background);
+  color: var(--gybs-body);
+  background: #ffffff;
 }
 
-/* Visible focus for accessibility */
 *:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--gybs-blue);
   outline-offset: 2px;
 }
 
-@keyframes hero-float {
-  0% {
-    transform: translateY(0);
+@layer components {
+  .gybs-btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-gybs-blue px-7 py-3.5 text-base font-semibold text-white shadow-gybs-primary transition-all duration-gybs ease-in-out hover:bg-gybs-navy;
   }
-  50% {
-    transform: translateY(-8px);
+  .gybs-btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border-2 border-gybs-blue bg-transparent px-7 py-3.5 text-base font-semibold text-gybs-blue transition-all duration-gybs ease-in-out hover:bg-[#EFF6FF];
   }
-  100% {
+  .gybs-btn-gold {
+    @apply inline-flex items-center justify-center rounded-lg bg-gybs-accent px-7 py-3.5 text-base font-semibold text-gybs-ink shadow-md transition-all duration-gybs ease-in-out hover:bg-[#D97706];
+  }
+  .gybs-card {
+    @apply rounded-xl border border-gybs-border bg-white p-7 shadow-gybs-card transition-all duration-gybs ease-in-out hover:-translate-y-0.5 hover:shadow-gybs-card-hover;
+  }
+  .gybs-section {
+    @apply py-[60px] md:py-[100px];
+  }
+}
+
+@keyframes gybs-kiosk-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
     transform: translateY(0);
   }
 }
 
-.hero-float {
-  animation: hero-float 4s ease-in-out infinite;
+.gybs-kiosk-reveal {
+  animation: gybs-kiosk-in 0.3s ease-out both;
 }

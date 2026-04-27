@@ -7,7 +7,7 @@ export type YesNo = 'yes' | 'no';
 export interface IntakeAnswers {
   hasEIN: YesNo;
   hasBusinessBankAccount: YesNo;
-  hasBookkeeping: 'yes' | 'outsourced' | 'no';
+  hasBookKeeping: 'yes' | 'outsourced' | 'no';
   hasFinancialStatements: 'yes' | 'partial' | 'no';
   hasDefinedOffers: 'yes' | 'in-progress' | 'no';
   hasPricingDefined: 'yes' | 'tiered' | 'no';
@@ -20,7 +20,7 @@ export interface IntakeAnswers {
 const norm = {
   hasEIN: (v: IntakeAnswers['hasEIN']) => (v === 'yes' ? 1 : 0),
   hasBusinessBankAccount: (v: IntakeAnswers['hasBusinessBankAccount']) => (v === 'yes' ? 1 : 0),
-  hasBookkeeping: (v: IntakeAnswers['hasBookkeeping']) =>
+  hasBookKeeping: (v: IntakeAnswers['hasBookKeeping']) =>
     v === 'yes' ? 1 : v === 'outsourced' ? 0.75 : 0,
   hasFinancialStatements: (v: IntakeAnswers['hasFinancialStatements']) =>
     v === 'yes' ? 1 : v === 'partial' ? 0.5 : 0,
@@ -59,7 +59,7 @@ export function calculateScore(
   const opVals = [
     norm.hasEIN(answers.hasEIN),
     norm.hasBusinessBankAccount(answers.hasBusinessBankAccount),
-    norm.hasBookkeeping(answers.hasBookkeeping),
+    norm.hasBookKeeping(answers.hasBookKeeping),
     norm.hasFinancialStatements(answers.hasFinancialStatements),
   ];
   const catVals = [
@@ -112,7 +112,7 @@ export function emptyIntakeAnswers(): IntakeAnswers {
   return {
     hasEIN: 'no',
     hasBusinessBankAccount: 'no',
-    hasBookkeeping: 'no',
+    hasBookKeeping: 'no',
     hasFinancialStatements: 'no',
     hasDefinedOffers: 'no',
     hasPricingDefined: 'no',

@@ -12,8 +12,7 @@ import {
   PATHWAY_TITLE,
   type PathwayId,
 } from '@/lib/pathways';
-import { buildResultPayload } from '@/lib/gybs-result-helpers';
-import { calculateScore, type IntakeAnswers } from '@/lib/scoring-engine';
+import { type IntakeAnswers } from '@/lib/scoring-engine';
 
 type Step = 1 | 2 | 3;
 
@@ -39,7 +38,14 @@ function PillOption<T extends string>({
           : 'border-gybs-border bg-white text-gybs-body hover:border-gybs-blue/40'
       }`}
     >
-      <input type="radio" name={name} value={value} checked={selected} onChange={() => onPick(value)} className="sr-only" />
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        checked={selected}
+        onChange={() => onPick(value)}
+        className="sr-only"
+      />
       {label}
     </label>
   );
@@ -62,12 +68,36 @@ function QuestionCard({
 
 const defaultPathway: PathwayId = 'business';
 
+type ZohoSubmitResponse = {
+  success?: boolean;
+  recordId?: string | number;
+  error?: string;
+  details?: unknown;
+};
+
+type ZohoResultResponse = {
+  success?: boolean;
+  result?: {
+    businessReadinessScore: number | string;
+    level: string;
+    lane: string;
+    assignedPack: string;
+    corrections: string;
+    upgradePathway: string;
+  };
+  error?: string;
+  details?: unknown;
+};
+
 export function AssessmentClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [pathway, setPathway] = useState<PathwayId>(defaultPathway);
   const [step, setStep] = useState<Step>(1);
   const [answers, setAnswers] = useState<Partial<IntakeAnswers>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     const q = searchParams.get('pathway');
@@ -76,20 +106,26 @@ export function AssessmentClient() {
       setPathway(q);
       return;
     }
+
     const stored = sessionStorage.getItem(GYBS_SELECTED_PATHWAY_KEY);
-    if (isPathwayId(stored)) setPathway(stored);
+    if (isPathwayId(stored)) {
+      setPathway(stored);
+    }
   }, [searchParams]);
 
-  const patch = useCallback(<K extends keyof IntakeAnswers>(key: K, value: IntakeAnswers[K]) => {
-    setAnswers((a) => ({ ...a, [key]: value }));
-  }, []);
+  const patch = useCallback(
+    <K extends keyof IntakeAnswers>(key: K, value: IntakeAnswers[K]) => {
+      setAnswers((a) => ({ ...a, [key]: value }));
+    },
+    []
+  );
 
   const step1Ok = useMemo(() => {
     const a = answers;
     return (
       a.hasEIN !== undefined &&
       a.hasBusinessBankAccount !== undefined &&
-      a.hasBookkeeping !== undefined &&
+      a.hasBookKeeping !== undefined &&
       a.hasFinancialStatements !== undefined
     );
   }, [answers]);
@@ -112,12 +148,79 @@ export function AssessmentClient() {
     );
   }, [answers]);
 
-  const submit = () => {
-    const full = answers as IntakeAnswers;
-    const breakdown = calculateScore(full, PATHWAY_TITLE[pathway]);
-    const payload = buildResultPayload(breakdown, pathway, pathwayBadgeLabel(pathway));
-    sessionStorage.setItem(GYBS_SCORE_RESULT_KEY, JSON.stringify(payload));
-    router.push('/results');
+  const submit = async () => {
+    try {
+      setSubmitting(true);
+      setSubmitError(null);
+
+      const full = answers as IntakeAnswers;
+
+      const businessId =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `gybs-${Date.now()}`;
+
+      const submitPayload = {
+        businessId,
+        intakeVersion: '1.0',
+        hasEIN: full.hasEIN,
+        hasBusinessBankAccount: full.hasBusinessBankAccount,
+        hasBookKeeping: full.hasBookKeeping,
+        hasFinancialStatements: full.hasFinancialStatements,
+        hasDefinedOffers: full.hasDefinedOffers,
+        hasPricingDefined: full.hasPricingDefined,
+        hasWrittenDescriptions: full.hasWrittenDescriptions,
+        hasCustomers: full.hasCustomers,
+        hasRepeatCustomers: full.hasRepeatCustomers,
+        hasPartners: full.hasPartners,
+      };
+
+      const submitRes = await fetch('/api/intake/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitPayload),
+      });
+
+      const submitData = (await submitRes.json()) as ZohoSubmitResponse;
+
+      if (!submitRes.ok || !submitData.recordId) {
+        throw new Error(submitData.error || 'Failed to submit intake to Zoho');
+      }
+
+      const resultRes = await fetch(`/api/readiness/result/${submitData.recordId}`, {
+        method: 'GET',
+        cache: 'no-store',
+      });
+
+      const resultData = (await resultRes.json()) as ZohoResultResponse;
+
+      if (!resultRes.ok || !resultData.result) {
+        throw new Error(resultData.error || 'Failed to fetch scored result from Zoho');
+      }
+
+      const payload = {
+        score: Number(resultData.result.businessReadinessScore),
+        readinessLevel: resultData.result.level,
+        recommendedLane: resultData.result.lane,
+        assignedPack: resultData.result.assignedPack,
+        corrections: resultData.result.corrections,
+        upgradePathway: resultData.result.upgradePathway,
+        pathway,
+        pathwayLabel: pathwayBadgeLabel(pathway),
+        pathwayTitle: PATHWAY_TITLE[pathway],
+      };
+
+      sessionStorage.setItem(GYBS_SCORE_RESULT_KEY, JSON.stringify(payload));
+      router.push('/results');
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : 'Something went wrong while submitting your assessment.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const pathwayLabel = PATHWAY_TITLE[pathway];
@@ -171,9 +274,9 @@ export function AssessmentClient() {
                 <PillOption name="bank" value="no" current={answers.hasBusinessBankAccount} label="No" onPick={(v) => patch('hasBusinessBankAccount', v)} />
               </QuestionCard>
               <QuestionCard title="Do you have active bookkeeping?">
-                <PillOption name="book" value="yes" current={answers.hasBookkeeping} label="Yes" onPick={(v) => patch('hasBookkeeping', v)} />
-                <PillOption name="book" value="outsourced" current={answers.hasBookkeeping} label="Outsourced" onPick={(v) => patch('hasBookkeeping', v)} />
-                <PillOption name="book" value="no" current={answers.hasBookkeeping} label="No" onPick={(v) => patch('hasBookkeeping', v)} />
+                <PillOption name="book" value="yes" current={answers.hasBookKeeping} label="Yes" onPick={(v) => patch('hasBookKeeping', v)} />
+                <PillOption name="book" value="outsourced" current={answers.hasBookKeeping} label="Outsourced" onPick={(v) => patch('hasBookKeeping', v)} />
+                <PillOption name="book" value="no" current={answers.hasBookKeeping} label="No" onPick={(v) => patch('hasBookKeeping', v)} />
               </QuestionCard>
               <QuestionCard title="Do you have financial statements (P&L, balance sheet)?">
                 <PillOption name="fin" value="yes" current={answers.hasFinancialStatements} label="Yes" onPick={(v) => patch('hasFinancialStatements', v)} />

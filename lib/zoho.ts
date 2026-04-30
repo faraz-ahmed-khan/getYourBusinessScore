@@ -6,28 +6,67 @@ type ZohoTokenResponse = {
   token_type?: string;
 };
 
-export async function getZohoAccessToken(): Promise<string> {
+let cachedAccessToken: string | null = null;
+let cachedAccessTokenExpiresAt = 0;
+let inFlightTokenRequest: Promise<string> | null = null;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isRateLimitedTokenError = (body: string) =>
+  body.includes('too many requests') || body.includes('Access Denied');
+
+async function requestNewZohoToken(): Promise<string> {
   const params = new URLSearchParams({
     refresh_token: process.env.ZOHO_REFRESH_TOKEN!,
     client_id: process.env.ZOHO_CLIENT_ID!,
     client_secret: process.env.ZOHO_CLIENT_SECRET!,
-    grant_type: "refresh_token",
+    grant_type: 'refresh_token',
   });
 
-  const res = await fetch(`${process.env.ZOHO_ACCOUNT_BASE}/oauth/v2/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params.toString(),
-    cache: "no-store",
-  });
+  const retries = [0, 1200, 2500];
+  let lastErrorText = '';
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Zoho token refresh failed: ${text}`);
+  for (let i = 0; i < retries.length; i += 1) {
+    if (retries[i] > 0) {
+      await sleep(retries[i]);
+    }
+
+    const res = await fetch(`${process.env.ZOHO_ACCOUNT_BASE}/oauth/v2/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const data = (await res.json()) as ZohoTokenResponse;
+      const ttlMs = Math.max(30, data.expires_in - 60) * 1000;
+      cachedAccessToken = data.access_token;
+      cachedAccessTokenExpiresAt = Date.now() + ttlMs;
+      return data.access_token;
+    }
+
+    lastErrorText = await res.text();
+    if (!isRateLimitedTokenError(lastErrorText)) {
+      break;
+    }
   }
 
-  const data = (await res.json()) as ZohoTokenResponse;
-  return data.access_token;
+  throw new Error(`Zoho token refresh failed: ${lastErrorText}`);
+}
+
+export async function getZohoAccessToken(): Promise<string> {
+  if (cachedAccessToken && Date.now() < cachedAccessTokenExpiresAt) {
+    return cachedAccessToken;
+  }
+
+  if (!inFlightTokenRequest) {
+    inFlightTokenRequest = requestNewZohoToken().finally(() => {
+      inFlightTokenRequest = null;
+    });
+  }
+
+  return inFlightTokenRequest;
 }
 
 export async function zohoFetch(path: string, init: RequestInit = {}) {

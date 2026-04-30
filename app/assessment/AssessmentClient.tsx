@@ -71,6 +71,7 @@ const defaultPathway: PathwayId = 'business';
 type ZohoSubmitResponse = {
   success?: boolean;
   recordId?: string | number;
+  businessId?: string;
   error?: string;
   details?: unknown;
 };
@@ -189,15 +190,37 @@ export function AssessmentClient() {
         throw new Error(submitData.error || 'Failed to submit intake to Zoho');
       }
 
-      const resultRes = await fetch(`/api/readiness/result/${submitData.recordId}`, {
-        method: 'GET',
-        cache: 'no-store',
-      });
+      const readinessUrl = new URL(
+        `/api/readiness/result/${submitData.recordId}`,
+        window.location.origin
+      );
 
-      const resultData = (await resultRes.json()) as ZohoResultResponse;
+      if (submitData.businessId) {
+        readinessUrl.searchParams.set('businessId', submitData.businessId);
+      }
 
-      if (!resultRes.ok || !resultData.result) {
-        throw new Error(resultData.error || 'Failed to fetch scored result from Zoho');
+      let resultData: ZohoResultResponse | null = null;
+      const resultFetchAttempts = 4;
+
+      for (let attempt = 0; attempt < resultFetchAttempts; attempt += 1) {
+        const resultRes = await fetch(readinessUrl.toString(), {
+          method: 'GET',
+          cache: 'no-store',
+        });
+
+        resultData = (await resultRes.json()) as ZohoResultResponse;
+
+        if (resultRes.ok && resultData.result) {
+          break;
+        }
+
+        if (attempt < resultFetchAttempts - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 600));
+        }
+      }
+
+      if (!resultData?.result) {
+        throw new Error(resultData?.error || 'Failed to fetch scored result from Zoho');
       }
 
       const payload = {

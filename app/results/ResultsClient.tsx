@@ -17,11 +17,11 @@ import { GYBS_SCORE_RESULT_KEY } from '@/lib/pathways';
 
 type StoredZohoResult = {
   score: number;
-  readinessLevel: string;
-  recommendedLane: string;
-  assignedPack: string;
-  corrections: string;
-  upgradePathway: string;
+  readinessLevel?: string;
+  recommendedLane?: string;
+  assignedPack?: string;
+  corrections?: string;
+  upgradePathway?: string;
   pathway?: string;
   pathwayLabel?: string;
   pathwayTitle?: string;
@@ -32,7 +32,8 @@ type UpgradeStep = {
   done: boolean;
 };
 
-function normalizeLevel(level: string): 1 | 2 | 3 {
+function normalizeLevel(level?: string): 1 | 2 | 3 | null {
+  if (!level) return null;
   if (level.includes('1')) return 1;
   if (level.includes('2')) return 2;
   return 3;
@@ -59,7 +60,7 @@ function levelBadge(level: 1 | 2 | 3): { text: string; className: string } {
   };
 }
 
-function parseCorrections(corrections: string): string[] {
+function parseCorrections(corrections?: string): string[] {
   if (!corrections || !corrections.trim()) return [];
   return corrections
     .split('\n')
@@ -67,7 +68,7 @@ function parseCorrections(corrections: string): string[] {
     .filter(Boolean);
 }
 
-function parseUpgradeSteps(upgradePathway: string): UpgradeStep[] {
+function parseUpgradeSteps(upgradePathway?: string): UpgradeStep[] {
   if (!upgradePathway || !upgradePathway.trim()) return [];
 
   return upgradePathway
@@ -194,9 +195,9 @@ export function ResultsClient() {
         <div className="mx-auto mt-10 max-w-[800px] rounded-xl border border-gybs-border bg-white p-6 shadow-gybs-card md:p-8">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { Icon: Layers, label: 'Readiness Level', value: data.readinessLevel },
-              { Icon: Navigation, label: 'Your Lane', value: data.recommendedLane },
-              { Icon: Package, label: 'Assigned Pack', value: data.assignedPack },
+              { Icon: Layers, label: 'Readiness Level', value: data.readinessLevel || 'Not available yet' },
+              { Icon: Navigation, label: 'Your Lane', value: data.recommendedLane || 'Not available yet' },
+              { Icon: Package, label: 'Assigned Pack', value: data.assignedPack || 'Not available yet' },
               { Icon: ArrowRight, label: 'Next Step', value: 'Subscribe to unlock' },
             ].map((c) => (
               <div key={c.label} className="text-center lg:text-left">

@@ -126,6 +126,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       recordId,
+      businessId,
       raw: zohoData,
     });
   } catch (e) {

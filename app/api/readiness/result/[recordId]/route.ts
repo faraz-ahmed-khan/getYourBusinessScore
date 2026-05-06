@@ -82,6 +82,9 @@ export async function GET(_request: Request, context: RouteContext) {
           `/creator/v2.1/data/${ownerName}/${appLinkName}/report/${reportLinkName}?criteria=${criteria}&field_config=all`,
           {
             method: 'GET',
+            headers: {
+              environment: 'development',
+            },
           }
         );
 

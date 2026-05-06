@@ -4,6 +4,9 @@ import { zohoFetch } from '@/lib/zoho';
 type SubmitBody = {
   businessId?: string;
   intakeVersion?: string;
+  Name?: string;
+  Email?: string;
+  Business_Name?: string;
   hasEIN?: string;
   hasBusinessBankAccount?: string;
   hasBookKeeping?: string;
@@ -16,6 +19,23 @@ type SubmitBody = {
   hasPartners?: string;
 };
 
+function toZohoNameParts(fullName: string) {
+  const trimmed = fullName.trim();
+  if (!trimmed) {
+    return { first_name: '', last_name: '' };
+  }
+
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) {
+    return { first_name: parts[0], last_name: parts[0] };
+  }
+
+  return {
+    first_name: parts[0],
+    last_name: parts.slice(1).join(' '),
+  };
+}
+
 function validateBody(body: SubmitBody): string[] {
   const errors: string[] = [];
 
@@ -25,6 +45,23 @@ function validateBody(body: SubmitBody): string[] {
       errors.push(`${String(field)} must be one of: ${allowed.join(', ')}`);
     }
   };
+
+  const requiredText = (field: 'Name' | 'Business_Name') => {
+    const value = body[field];
+    if (!value || !value.trim()) {
+      errors.push(`${field} is required`);
+    }
+  };
+
+  const email = body.Email;
+  if (!email || !email.trim()) {
+    errors.push('Email is required');
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    errors.push('Email must be a valid email');
+  }
+
+  requiredText('Name');
+  requiredText('Business_Name');
 
   mustBeOneOf('hasEIN', ['yes', 'no']);
   mustBeOneOf('hasBusinessBankAccount', ['yes', 'no']);
@@ -69,6 +106,9 @@ export async function POST(request: Request) {
         {
           businessId,
           intakeVersion: body.intakeVersion || '1.0',
+          Name: toZohoNameParts(body.Name || ''),
+          Email: body.Email?.trim(),
+          Business_Name: body.Business_Name?.trim(),
           hasEIN: body.hasEIN,
           hasBusinessBankAccount: body.hasBusinessBankAccount,
           hasBookKeeping: body.hasBookKeeping,
@@ -83,14 +123,14 @@ export async function POST(request: Request) {
       ],
     };
 
-    console.log(zohoPayload, "zohoPayload");
-    console.log(`/creator/v2.1/data/${ownerName}/${appLinkName}/form/${formLinkName}`);
-
     const zohoRes = await zohoFetch(
       `/creator/v2.1/data/${ownerName}/${appLinkName}/form/${formLinkName}`,
       {
         method: 'POST',
         body: JSON.stringify(zohoPayload),
+        headers: {
+          environment: 'development',
+        },
       }
     );
 

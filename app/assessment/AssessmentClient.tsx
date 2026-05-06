@@ -14,7 +14,7 @@ import {
 } from '@/lib/pathways';
 import { type IntakeAnswers } from '@/lib/scoring-engine';
 
-type Step = 1 | 2 | 3;
+type Step = 0 | 1 | 2 | 3;
 
 function PillOption<T extends string>({
   name,
@@ -95,10 +95,14 @@ export function AssessmentClient() {
   const searchParams = useSearchParams();
 
   const [pathway, setPathway] = useState<PathwayId>(defaultPathway);
-  const [step, setStep] = useState<Step>(1);
+  const [step, setStep] = useState<Step>(0);
   const [answers, setAnswers] = useState<Partial<IntakeAnswers>>({});
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerBusinessName, setCustomerBusinessName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [introError, setIntroError] = useState<string | null>(null);
 
   useEffect(() => {
     const q = searchParams.get('pathway');
@@ -149,6 +153,39 @@ export function AssessmentClient() {
     );
   }, [answers]);
 
+  const introStepOk = useMemo(() => {
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim());
+    return customerName.trim().length > 0 && emailOk && customerBusinessName.trim().length > 0;
+  }, [customerBusinessName, customerEmail, customerName]);
+
+  const continueFromIntro = () => {
+    if (introStepOk) {
+      setIntroError(null);
+      setStep(1);
+      return;
+    }
+
+    if (!customerName.trim()) {
+      setIntroError('Please enter customer name.');
+      return;
+    }
+
+    if (!customerEmail.trim()) {
+      setIntroError('Please enter customer email.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim())) {
+      setIntroError('Please enter a valid customer email.');
+      return;
+    }
+
+    if (!customerBusinessName.trim()) {
+      setIntroError('Please enter customer business name.');
+      return;
+    }
+  };
+
   const submit = async () => {
     try {
       setSubmitting(true);
@@ -164,6 +201,9 @@ export function AssessmentClient() {
       const submitPayload = {
         businessId,
         intakeVersion: '1.0',
+        Name: customerName.trim(),
+        Email: customerEmail.trim(),
+        Business_Name: customerBusinessName.trim(),
         hasEIN: full.hasEIN,
         hasBusinessBankAccount: full.hasBusinessBankAccount,
         hasBookKeeping: full.hasBookKeeping,
@@ -274,7 +314,9 @@ export function AssessmentClient() {
             ))}
           </div>
           <p className="mt-2 text-center text-xs text-gybs-muted">
-            Step {step} of 3 — {step === 1 ? 'Operations' : step === 2 ? 'Your Offers' : 'Your Market'}
+            {step === 0
+              ? 'Before you start — Customer details'
+              : `Step ${step} of 3 — ${step === 1 ? 'Operations' : step === 2 ? 'Your Offers' : 'Your Market'}`}
           </p>
         </div>
       </div>
@@ -284,6 +326,73 @@ export function AssessmentClient() {
           <div className="mb-8 inline-flex rounded-full bg-gybs-navy px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white">
             Selected Pathway: {pathwayLabel}
           </div>
+
+          {step === 0 && (
+            <div className="space-y-6">
+              <p className="text-sm font-semibold text-gybs-muted">Customer Details</p>
+              <div className="rounded-xl border border-gybs-border bg-white p-5 shadow-sm md:p-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="customer-name" className="text-sm font-semibold text-gybs-ink">
+                      Name
+                    </label>
+                    <input
+                      id="customer-name"
+                      type="text"
+                      value={customerName}
+                      onChange={(event) => {
+                        setCustomerName(event.target.value);
+                        if (introError) setIntroError(null);
+                      }}
+                      className="w-full rounded-lg border border-gybs-border px-4 py-3 text-sm text-gybs-ink outline-none transition focus:border-gybs-blue focus:ring-2 focus:ring-gybs-blue/20"
+                      placeholder="Enter your name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="customer-email" className="text-sm font-semibold text-gybs-ink">
+                      Email
+                    </label>
+                    <input
+                      id="customer-email"
+                      type="email"
+                      value={customerEmail}
+                      onChange={(event) => {
+                        setCustomerEmail(event.target.value);
+                        if (introError) setIntroError(null);
+                      }}
+                      className="w-full rounded-lg border border-gybs-border px-4 py-3 text-sm text-gybs-ink outline-none transition focus:border-gybs-blue focus:ring-2 focus:ring-gybs-blue/20"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="customer-business-name" className="text-sm font-semibold text-gybs-ink">
+                      Business Name
+                    </label>
+                    <input
+                      id="customer-business-name"
+                      type="text"
+                      value={customerBusinessName}
+                      onChange={(event) => {
+                        setCustomerBusinessName(event.target.value);
+                        if (introError) setIntroError(null);
+                      }}
+                      className="w-full rounded-lg border border-gybs-border px-4 py-3 text-sm text-gybs-ink outline-none transition focus:border-gybs-blue focus:ring-2 focus:ring-gybs-blue/20"
+                      placeholder="Enter your business name"
+                    />
+                  </div>
+                </div>
+              </div>
+              {introError && <p className="text-sm text-red-600">{introError}</p>}
+              <button
+                type="button"
+                disabled={submitting}
+                onClick={continueFromIntro}
+                className="gybs-btn-primary mt-4 w-full disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next →
+              </button>
+            </div>
+          )}
 
           {step === 1 && (
             <div className="space-y-6">

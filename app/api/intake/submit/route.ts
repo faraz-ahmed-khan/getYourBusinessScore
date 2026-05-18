@@ -136,8 +136,6 @@ export async function POST(request: Request) {
 
     const zohoData = await zohoRes.json();
 
-    console.log(zohoData, "zohoDataaaa");
-
     if (!zohoRes.ok) {
       return NextResponse.json(
         {
@@ -171,10 +169,17 @@ export async function POST(request: Request) {
     });
   } catch (e) {
     console.error('Submit error', e);
+    const message = e instanceof Error ? e.message : 'Submission failed.';
+    const isTlsError =
+      message.includes('UNABLE_TO_VERIFY_LEAF_SIGNATURE') ||
+      message.includes('unable to verify the first certificate');
+
     return NextResponse.json(
       {
         success: false,
-        error: e instanceof Error ? e.message : 'Submission failed.',
+        error: isTlsError
+          ? 'Could not connect to Zoho (TLS certificate error). Restart the dev server; local dev uses relaxed TLS by default.'
+          : message,
       },
       { status: 500 }
     );

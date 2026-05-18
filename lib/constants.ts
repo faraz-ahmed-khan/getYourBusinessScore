@@ -38,5 +38,3 @@ export const LEVEL_1_ROUTES = {
   education: 'https://misconiusanetwork.com',
   training: 'https://sbaready.org',
 } as const;
-
-export const ASSESSMENT_STEP_COUNT = 8;

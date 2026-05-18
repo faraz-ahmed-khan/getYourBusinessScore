@@ -5,12 +5,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { GYBS_OPEN_KIOSK_PENDING_KEY } from '@/lib/pathways';
+import { GYBS_SELECTED_PATHWAY_KEY } from '@/lib/pathways';
 
-function openKioskOnHome() {
-  if (typeof window === 'undefined') return;
-  window.dispatchEvent(new CustomEvent('gybs-open-kiosk'));
-  document.getElementById('kiosk-section')?.scrollIntoView({ behavior: 'smooth' });
+function startAssessment(router: ReturnType<typeof useRouter>) {
+  sessionStorage.setItem(GYBS_SELECTED_PATHWAY_KEY, 'business');
+  router.push('/assessment?pathway=business');
 }
 
 export function Navbar() {
@@ -54,10 +53,11 @@ export function Navbar() {
             type="button"
             onClick={() => {
               if (pathname === '/') {
-                openKioskOnHome();
+                startAssessment(router);
+              } else if (pathname.startsWith('/assessment')) {
+                return;
               } else {
-                sessionStorage.setItem(GYBS_OPEN_KIOSK_PENDING_KEY, '1');
-                router.push('/');
+                startAssessment(router);
               }
             }}
             className="gybs-btn-primary !py-3 !text-sm sm:!text-base"

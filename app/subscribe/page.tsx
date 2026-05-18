@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Subscribe',
-  description: 'Unlock readiness, education, and opportunities aligned to your Business Readiness Score.',
+  description: 'Subscribe on MisconiUSA.com after completing your Business Readiness Score.',
 };
 
 export default function SubscribePage() {
@@ -16,7 +16,7 @@ export default function SubscribePage() {
         <div className="mx-auto max-w-content text-center md:px-6">
           <h1 className="text-display-h2-sm md:text-display-h2">Subscribe to unlock readiness</h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/85">
-            Membership connects you to Misconi USA operational readiness, ecosystem education, and SBA-aligned support.
+            Membership is managed on MisconiUSA.com. Complete your GYBS intake first, then subscribe when you are ready to activate.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
@@ -27,7 +27,7 @@ export default function SubscribePage() {
             >
               Subscribe on MisconiUSA.com
             </a>
-            <Link href="/" className="gybs-btn-secondary !border-white !text-white hover:!bg-white/10">
+            <Link href="/assessment?pathway=business" className="gybs-btn-secondary !border-white !text-white hover:!bg-white/10">
               Get Your Business Score
             </Link>
           </div>

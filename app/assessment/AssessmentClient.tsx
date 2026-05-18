@@ -12,7 +12,7 @@ import {
   PATHWAY_TITLE,
   type PathwayId,
 } from '@/lib/pathways';
-import { type IntakeAnswers } from '@/lib/scoring-engine';
+import { type IntakeAnswers } from '@/lib/intake-types';
 
 type Step = 0 | 1 | 2 | 3;
 
@@ -73,7 +73,10 @@ type ZohoSubmitResponse = {
   recordId?: string | number;
   businessId?: string;
   error?: string;
-  details?: unknown;
+  errors?: string[];
+  details?: {
+    result?: Array<{ error?: string[] }>;
+  };
 };
 
 type ZohoResultResponse = {
@@ -227,7 +230,13 @@ export function AssessmentClient() {
       const submitData = (await submitRes.json()) as ZohoSubmitResponse;
 
       if (!submitRes.ok || !submitData.recordId) {
-        throw new Error(submitData.error || 'Failed to submit intake to Zoho');
+        const zohoFieldErrors = submitData.details?.result?.[0]?.error;
+        const message =
+          (Array.isArray(submitData.errors) && submitData.errors.join(' ')) ||
+          (Array.isArray(zohoFieldErrors) && zohoFieldErrors.join(', ')) ||
+          submitData.error ||
+          'Failed to submit intake to Zoho';
+        throw new Error(message);
       }
 
       const readinessUrl = new URL(
@@ -477,17 +486,22 @@ export function AssessmentClient() {
                 <PillOption name="part" value="informal" current={answers.hasPartners} label="Informal" onPick={(v) => patch('hasPartners', v)} />
                 <PillOption name="part" value="no" current={answers.hasPartners} label="No" onPick={(v) => patch('hasPartners', v)} />
               </QuestionCard>
+              {submitError && (
+                <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+                  {submitError}
+                </p>
+              )}
               <div className="flex flex-col gap-3 sm:flex-row">
                 <button type="button" onClick={() => setStep(2)} className="gybs-btn-secondary flex-1">
                   ← Back
                 </button>
                 <button
                   type="button"
-                  disabled={!step3Ok}
+                  disabled={!step3Ok || submitting}
                   onClick={submit}
                   className="gybs-btn-gold flex-1 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Get My Score →
+                  {submitting ? 'Submitting…' : 'Get My Score →'}
                 </button>
               </div>
             </div>

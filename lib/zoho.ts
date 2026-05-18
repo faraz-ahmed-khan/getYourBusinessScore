@@ -1,4 +1,3 @@
-// lib/zoho.ts
 type ZohoTokenResponse = {
   access_token: string;
   expires_in: number;
@@ -9,11 +8,34 @@ type ZohoTokenResponse = {
 let cachedAccessToken: string | null = null;
 let cachedAccessTokenExpiresAt = 0;
 let inFlightTokenRequest: Promise<string> | null = null;
+let loggedInsecureTlsWarning = false;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const isRateLimitedTokenError = (body: string) =>
   body.includes('too many requests') || body.includes('Access Denied');
+
+/**
+ * Dev-only: Windows / corporate networks often fail Zoho TLS chain verification.
+ * Set ZOHO_INSECURE_TLS=false in .env to disable.
+ */
+function configureDevTls(): void {
+  if (process.env.NODE_ENV === 'production') return;
+  if (process.env.ZOHO_INSECURE_TLS === 'false') return;
+  if (process.env.ZOHO_INSECURE_TLS === 'true' || process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0') {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+      if (!loggedInsecureTlsWarning) {
+        loggedInsecureTlsWarning = true;
+        console.warn(
+          '[zoho] TLS verification relaxed for local development. Set ZOHO_INSECURE_TLS=false to disable.'
+        );
+      }
+    }
+  }
+}
+
+configureDevTls();
 
 async function requestNewZohoToken(): Promise<string> {
   const params = new URLSearchParams({
@@ -72,15 +94,13 @@ export async function getZohoAccessToken(): Promise<string> {
 export async function zohoFetch(path: string, init: RequestInit = {}) {
   const accessToken = await getZohoAccessToken();
 
-  const res = await fetch(`${process.env.ZOHO_CREATOR_BASE}${path}`, {
+  return fetch(`${process.env.ZOHO_CREATOR_BASE}${path}`, {
     ...init,
     headers: {
       Authorization: `Zoho-oauthtoken ${accessToken}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...(init.headers || {}),
     },
-    cache: "no-store",
+    cache: 'no-store',
   });
-
-  return res;
 }

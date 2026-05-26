@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { SITE_URLS } from '@/lib/site-urls';
 
 export function SiteFooter() {
   return (
@@ -15,13 +16,13 @@ export function SiteFooter() {
             </p>
           </div>
           <div className="flex flex-col gap-3 text-sm font-medium sm:items-end">
-            <a href="https://misconiusa.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/90">
+            <a href={SITE_URLS.misconiUsa} target="_blank" rel="noopener noreferrer" className="hover:text-white/90">
               MisconiUSA.com
             </a>
-            <a href="https://misconiusanetwork.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/90">
+            <a href={SITE_URLS.misconiNetwork} target="_blank" rel="noopener noreferrer" className="hover:text-white/90">
               MisconiUSANetwork.com
             </a>
-            <a href="https://sbaready.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/90">
+            <a href={SITE_URLS.sbaReady} target="_blank" rel="noopener noreferrer" className="hover:text-white/90">
               SBAReady.com
             </a>
           </div>

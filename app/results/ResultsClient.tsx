@@ -14,6 +14,7 @@ import {
   Award,
 } from 'lucide-react';
 import { GYBS_SCORE_RESULT_KEY } from '@/lib/pathways';
+import { SITE_URLS } from '@/lib/site-urls';
 
 type StoredZohoResult = {
   score: number;
@@ -270,7 +271,7 @@ export function ResultsClient() {
                 iconClass: 'text-gybs-navy',
                 title: 'Operational Readiness',
                 desc: 'Subscribe, pathways, and opportunity routing after you are readiness-activated.',
-                href: 'https://misconiusa.com',
+                href: SITE_URLS.misconiUsa,
                 cta: 'Visit MisconiUSA.com',
               },
               {
@@ -278,7 +279,7 @@ export function ResultsClient() {
                 iconClass: 'text-gybs-blue',
                 title: 'Education & Orientation',
                 desc: 'Readiness concepts and ecosystem context before or alongside your pathway.',
-                href: 'https://misconiusanetwork.com',
+                href: SITE_URLS.misconiNetwork,
                 cta: 'Visit MisconiUSANetwork.com',
               },
               {
@@ -286,7 +287,7 @@ export function ResultsClient() {
                 iconClass: 'text-gybs-success',
                 title: 'Training & SBA Support',
                 desc: 'Foundational training and SBA-supported help for earlier-stage readiness needs.',
-                href: 'https://sbaready.com',
+                href: SITE_URLS.sbaReady,
                 cta: 'Visit SBAReady.com',
               },
             ].map((card) => (
@@ -348,7 +349,7 @@ export function ResultsClient() {
                 <li>✓ Limited Team Access</li>
               </ul>
               <a
-                href="https://misconiusa.com/subscribe?tier=basic"
+                href={SITE_URLS.subscribeBasic}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="gybs-btn-primary mt-6 block w-full text-center"
@@ -371,7 +372,7 @@ export function ResultsClient() {
                 <li>✓ CUBE Enterprise Suite</li>
               </ul>
               <a
-                href="https://misconiusa.com/subscribe?tier=enterprise"
+                href={SITE_URLS.subscribeEnterprise}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="gybs-btn-gold mt-6 block w-full text-center"

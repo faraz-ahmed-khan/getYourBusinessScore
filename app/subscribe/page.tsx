@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { SITE_URLS } from '@/lib/site-urls';
 
 export const metadata: Metadata = {
   title: 'Subscribe',
@@ -20,7 +21,7 @@ export default function SubscribePage() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
-              href="https://misconiusa.com/subscribe"
+              href={SITE_URLS.subscribe}
               target="_blank"
               rel="noopener noreferrer"
               className="gybs-btn-gold"

@@ -18,7 +18,18 @@ Business-only readiness scoring kiosk for the Misconi USA ecosystem. GYBS is the
 
 ## Environment
 
-Configure Zoho in `.env` (see existing env vars used by `lib/zoho.ts` and API routes):
+Copy `.env.example` to `.env` and fill in values.
+
+**Ecosystem URLs** (footer, results routing, subscribe — change per environment without editing code):
+
+- `NEXT_PUBLIC_GYBS_URL`
+- `NEXT_PUBLIC_MISCONI_USA_URL`
+- `NEXT_PUBLIC_MISCONI_NETWORK_URL`
+- `NEXT_PUBLIC_SBA_READY_URL`
+
+Subscribe tier links are derived from `NEXT_PUBLIC_MISCONI_USA_URL` in `lib/site-urls.ts`.
+
+**Zoho** (see `lib/zoho.ts` and API routes):
 
 - `ZOHO_OWNER_NAME`
 - `ZOHO_APP_LINK_NAME`

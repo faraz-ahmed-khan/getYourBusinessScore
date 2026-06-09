@@ -7,9 +7,16 @@ import { useEffect, useState } from 'react';
 
 import { GYBS_SELECTED_PATHWAY_KEY } from '@/lib/pathways';
 
-function startAssessment(router: ReturnType<typeof useRouter>) {
+function startIntake(router: ReturnType<typeof useRouter>, pathname: string) {
+  if (pathname === '/') {
+    router.push('/about');
+    return;
+  }
+  if (pathname.startsWith('/assessment')) {
+    return;
+  }
   sessionStorage.setItem(GYBS_SELECTED_PATHWAY_KEY, 'business');
-  router.push('/assessment?pathway=business');
+  router.push('/about');
 }
 
 export function Navbar() {
@@ -51,15 +58,7 @@ export function Navbar() {
           )}
           <button
             type="button"
-            onClick={() => {
-              if (pathname === '/') {
-                startAssessment(router);
-              } else if (pathname.startsWith('/assessment')) {
-                return;
-              } else {
-                startAssessment(router);
-              }
-            }}
+            onClick={() => startIntake(router, pathname)}
             className="gybs-btn-primary !py-3 !text-sm sm:!text-base"
           >
             Get Your Business Score

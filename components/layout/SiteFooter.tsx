@@ -29,14 +29,9 @@ export function SiteFooter() {
         </div>
         <div className="mt-8 flex flex-col items-start justify-between gap-4 text-xs text-slate-400 sm:flex-row sm:items-center">
           <p>© 2025 Misconi USA. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-slate-200">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-slate-200">
-              Terms
-            </Link>
-          </div>
+          <Link href="/terms" className="hover:text-slate-200">
+            Terms & Policies
+          </Link>
         </div>
       </div>
     </footer>

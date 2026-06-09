@@ -9,8 +9,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: {
-    default: 'GetYourBusinessScore.com — Business Readiness Score & Assessment',
-    template: '%s | GetYourBusinessScore.com',
+    default: 'Get Your Business Score',
+    template: '%s | Get Your Business Score',
   },
   description: 'Complete the free business intake and see your Business Readiness Score instantly.',
   keywords: [

@@ -1,14 +1,17 @@
 import type { ReactNode } from 'react';
+import { GybsBanner } from '@/components/doctrine/GybsBanner';
 
 type DoctrinePageProps = {
   children: ReactNode;
   className?: string;
+  /** Set false on pages that should not show the corporate banner */
+  showBanner?: boolean;
 };
 
-export function DoctrinePage({ children, className = '' }: DoctrinePageProps) {
+export function DoctrinePage({ children, className = '', showBanner = true }: DoctrinePageProps) {
   return (
     <div>
-      <div className="banner-slot" aria-hidden="true" />
+      {showBanner ? <GybsBanner /> : <div className="banner-slot" aria-hidden="true" />}
       <section className={`gybs-section bg-white ${className}`.trim()}>{children}</section>
     </div>
   );

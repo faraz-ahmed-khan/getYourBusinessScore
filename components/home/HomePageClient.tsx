@@ -7,7 +7,7 @@ export function HomePageClient() {
   return (
     <DoctrinePage>
       <DoctrineContent narrow>
-        <h1 className="text-display-h1-sm text-gybs-ink md:text-display-h1">Get Your Business Score</h1>
+        <h2 className="text-display-h2-sm text-gybs-ink md:text-display-h2">Begin Your Readiness Intake</h2>
         <p className="mt-6 max-w-xl text-lg text-gybs-body md:text-[18px] md:leading-relaxed">
           You are about to begin the Misconi USA Readiness Intake. This process will create or retrieve your
           Universal Business ID (UBID), activate your Master Business Intake (MBI), and initialize your metadata

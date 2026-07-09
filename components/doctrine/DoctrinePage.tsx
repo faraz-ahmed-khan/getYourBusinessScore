@@ -1,18 +1,36 @@
 import type { ReactNode } from 'react';
+import { AssessmentBanner } from '@/components/doctrine/AssessmentBanner';
 import { GybsBanner } from '@/components/doctrine/GybsBanner';
+
+type BannerVariant = 'default' | 'assessment' | 'none';
 
 type DoctrinePageProps = {
   children: ReactNode;
   className?: string;
-  /** Set false on pages that should not show the corporate banner */
+  /** @deprecated Use `banner` instead */
   showBanner?: boolean;
+  banner?: BannerVariant;
 };
 
-export function DoctrinePage({ children, className = '', showBanner = true }: DoctrinePageProps) {
+function PageBanner({ variant }: { variant: BannerVariant }) {
+  if (variant === 'assessment') return <AssessmentBanner />;
+  if (variant === 'default') return <GybsBanner />;
+  return <div className="banner-slot" aria-hidden="true" />;
+}
+
+export function DoctrinePage({
+  children,
+  className = '',
+  showBanner = true,
+  banner,
+}: DoctrinePageProps) {
+  const bannerVariant: BannerVariant =
+    banner ?? (showBanner ? 'default' : 'none');
+
   return (
-    <div>
-      {showBanner ? <GybsBanner /> : <div className="banner-slot" aria-hidden="true" />}
-      <section className={`gybs-section bg-white ${className}`.trim()}>{children}</section>
+    <div className="bg-white">
+      <PageBanner variant={bannerVariant} />
+      <section className={`gybs-page-content ${className}`.trim()}>{children}</section>
     </div>
   );
 }

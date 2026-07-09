@@ -51,6 +51,9 @@ body {
   .gybs-section {
     @apply py-[60px] md:py-[100px];
   }
+  .gybs-page-content {
+    @apply pt-10 pb-16 md:pt-14 md:pb-24;
+  }
 }
 
 @keyframes gybs-kiosk-in {

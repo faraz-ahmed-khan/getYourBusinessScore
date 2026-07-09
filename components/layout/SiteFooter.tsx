@@ -28,7 +28,7 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="mt-8 flex flex-col items-start justify-between gap-4 text-xs text-slate-400 sm:flex-row sm:items-center">
-          <p>© 2025 Misconi USA. All rights reserved.</p>
+          <p>GetYourBusinessScore.com™ is a trademarked property of Misconi USA. All rights reserved.</p>
           <Link href="/terms" className="hover:text-slate-200">
             Terms & Policies
           </Link>

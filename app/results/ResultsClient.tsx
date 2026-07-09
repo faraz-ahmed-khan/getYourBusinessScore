@@ -56,7 +56,7 @@ export function ResultsClient() {
 
   if (!data || !levelInfo) {
     return (
-      <DoctrinePage>
+      <DoctrinePage showBanner={false}>
         <DoctrineContent narrow>
           <p className="text-gybs-muted">No results found. Complete the assessment to see your readiness score.</p>
           <Link href="/assessment" className="gybs-btn-primary mt-6 inline-flex">
@@ -68,7 +68,7 @@ export function ResultsClient() {
   }
 
   return (
-    <DoctrinePage>
+    <DoctrinePage showBanner={false}>
       <DoctrineContent>
         <h1 className="text-display-h1-sm text-gybs-ink md:text-display-h1">Your Readiness Score</h1>
 

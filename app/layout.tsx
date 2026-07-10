@@ -30,10 +30,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="min-h-screen bg-white font-sans antialiased">
+      <body className="flex min-h-screen flex-col bg-white font-sans antialiased">
         <JsonLd />
         <Navbar />
-        <main>{children}</main>
+        <main className="flex-1">{children}</main>
         <SiteFooter />
       </body>
     </html>

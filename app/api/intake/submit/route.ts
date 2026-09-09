@@ -1,78 +1,48 @@
 import { NextResponse } from 'next/server';
 import { zohoFetch } from '@/lib/zoho';
 
+const ANSWER_VALUES = ['A', 'B', 'C', 'D'] as const;
+type AnswerValue = (typeof ANSWER_VALUES)[number];
+
+const QUESTION_KEYS = [
+  'q1',
+  'q2',
+  'q3',
+  'q4',
+  'q5',
+  'q6',
+  'q7',
+  'q8',
+  'q9',
+  'q10',
+] as const;
+
+type QuestionKey = (typeof QUESTION_KEYS)[number];
+
 type SubmitBody = {
   businessId?: string;
   intakeVersion?: string;
-  Name?: string;
-  Email?: string;
-  Business_Name?: string;
-  hasEIN?: string;
-  hasBusinessBankAccount?: string;
-  hasBookKeeping?: string;
-  hasFinancialStatements?: string;
-  hasDefinedOffers?: string;
-  hasPricingDefined?: string;
-  hasWrittenDescriptions?: string;
-  hasCustomers?: string;
-  hasRepeatCustomers?: string;
-  hasPartners?: string;
-};
+  score?: number;
+  level?: number;
+} & Partial<Record<QuestionKey, string>>;
 
-function toZohoNameParts(fullName: string) {
-  const trimmed = fullName.trim();
-  if (!trimmed) {
-    return { first_name: '', last_name: '' };
-  }
-
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) {
-    return { first_name: parts[0], last_name: parts[0] };
-  }
-
-  return {
-    first_name: parts[0],
-    last_name: parts.slice(1).join(' '),
-  };
+function isAnswerValue(value: unknown): value is AnswerValue {
+  return typeof value === 'string' && ANSWER_VALUES.includes(value as AnswerValue);
 }
 
 function validateBody(body: SubmitBody): string[] {
   const errors: string[] = [];
 
-  const mustBeOneOf = (field: keyof SubmitBody, allowed: string[]) => {
-    const value = body[field];
-    if (!value || !allowed.includes(value)) {
-      errors.push(`${String(field)} must be one of: ${allowed.join(', ')}`);
+  for (const key of QUESTION_KEYS) {
+    const value = body[key];
+    if (!isAnswerValue(value)) {
+      errors.push(`${key} must be one of: ${ANSWER_VALUES.join(', ')}`);
     }
-  };
-
-  const requiredText = (field: 'Name' | 'Business_Name') => {
-    const value = body[field];
-    if (!value || !value.trim()) {
-      errors.push(`${field} is required`);
-    }
-  };
-
-  const email = body.Email;
-  if (!email || !email.trim()) {
-    errors.push('Email is required');
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-    errors.push('Email must be a valid email');
   }
 
-  requiredText('Name');
-  requiredText('Business_Name');
-
-  mustBeOneOf('hasEIN', ['yes', 'no']);
-  mustBeOneOf('hasBusinessBankAccount', ['yes', 'no']);
-  mustBeOneOf('hasBookKeeping', ['yes', 'no', 'outsourced']);
-  mustBeOneOf('hasFinancialStatements', ['yes', 'no', 'partial']);
-  mustBeOneOf('hasDefinedOffers', ['yes', 'no', 'in-progress']);
-  mustBeOneOf('hasPricingDefined', ['yes', 'no', 'tiered']);
-  mustBeOneOf('hasWrittenDescriptions', ['yes', 'no', 'partial']);
-  mustBeOneOf('hasCustomers', ['yes', 'no']);
-  mustBeOneOf('hasRepeatCustomers', ['yes', 'no', 'unknown']);
-  mustBeOneOf('hasPartners', ['yes', 'no', 'informal']);
+  if (typeof body.score !== 'number' || !Number.isFinite(body.score)) {
+    errors.push('score must be a number');
+  }
 
   return errors;
 }
@@ -83,17 +53,12 @@ export async function POST(request: Request) {
 
     const errors = validateBody(body);
     if (errors.length > 0) {
-      return NextResponse.json(
-        { success: false, errors },
-        { status: 422 }
-      );
+      return NextResponse.json({ success: false, errors }, { status: 422 });
     }
 
     const ownerName = process.env.ZOHO_OWNER_NAME!;
     const appLinkName = process.env.ZOHO_APP_LINK_NAME!;
     const formLinkName = process.env.ZOHO_FORM_LINK_NAME!;
-
-    console.log(ownerName, appLinkName, formLinkName, "ownerName, appLinkName, formLinkName");
 
     const businessId =
       body.businessId ||
@@ -101,27 +66,23 @@ export async function POST(request: Request) {
         ? crypto.randomUUID()
         : `gybs-${Date.now()}`);
 
-    const zohoPayload = {
-      data: [
-        {
-          businessId,
-          intakeVersion: body.intakeVersion || '1.0',
-          Name: toZohoNameParts(body.Name || ''),
-          Email: body.Email?.trim(),
-          Business_Name: body.Business_Name?.trim(),
-          hasEIN: body.hasEIN,
-          hasBusinessBankAccount: body.hasBusinessBankAccount,
-          hasBookKeeping: body.hasBookKeeping,
-          hasFinancialStatements: body.hasFinancialStatements,
-          hasDefinedOffers: body.hasDefinedOffers,
-          hasPricingDefined: body.hasPricingDefined,
-          hasWrittenDescriptions: body.hasWrittenDescriptions,
-          hasCustomers: body.hasCustomers,
-          hasRepeatCustomers: body.hasRepeatCustomers,
-          hasPartners: body.hasPartners,
-        },
-      ],
+    const scoreValue = Number(body.score);
+
+    // q1–q10 answers + local score stored on Zoho (field link name: score)
+    const answers = Object.fromEntries(
+      QUESTION_KEYS.map((key) => [key, body[key]])
+    ) as Record<QuestionKey, AnswerValue>;
+
+    const zohoRecord = {
+      ...answers,
+      score: scoreValue,
     };
+
+    const zohoPayload = {
+      data: [zohoRecord],
+    };
+
+    console.log('[intake/submit] zohoPayload', JSON.stringify(zohoPayload));
 
     const zohoRes = await zohoFetch(
       `/creator/v2.1/data/${ownerName}/${appLinkName}/form/${formLinkName}`,
@@ -132,6 +93,7 @@ export async function POST(request: Request) {
     );
 
     const zohoData = await zohoRes.json();
+    console.log('[intake/submit] zohoData', JSON.stringify(zohoData));
 
     if (!zohoRes.ok) {
       return NextResponse.json(
@@ -147,11 +109,15 @@ export async function POST(request: Request) {
     const created = zohoData?.result?.[0];
     const recordId = created?.data?.ID || created?.data?.id;
 
+    // Zoho sometimes returns code 3001 with field errors inside an otherwise 200-ish body.
     if (!recordId) {
+      const fieldErrors = created?.error;
       return NextResponse.json(
         {
           success: false,
-          error: 'Zoho record created but no record ID was returned',
+          error: Array.isArray(fieldErrors)
+            ? fieldErrors.join(', ')
+            : 'Zoho record created but no record ID was returned',
           details: zohoData,
         },
         { status: 500 }

@@ -42,10 +42,38 @@ function OptionButton({
   );
 }
 
+type ZohoSubmitResponse = {
+  success?: boolean;
+  recordId?: string | number;
+  businessId?: string;
+  error?: string;
+  errors?: string[];
+  details?: {
+    result?: Array<{ error?: string[] }>;
+  };
+};
+
+function answersToZohoPayload(answers: Record<number, AnswerChoice>) {
+  return {
+    q1: answers[1],
+    q2: answers[2],
+    q3: answers[3],
+    q4: answers[4],
+    q5: answers[5],
+    q6: answers[6],
+    q7: answers[7],
+    q8: answers[8],
+    q9: answers[9],
+    q10: answers[10],
+  };
+}
+
 export function AssessmentClient() {
   const router = useRouter();
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [answers, setAnswers] = useState<Record<number, AnswerChoice>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const question = ASSESSMENT_QUESTIONS[currentQuestion - 1];
   const selectedAnswer = answers[currentQuestion];
@@ -55,11 +83,16 @@ export function AssessmentClient() {
     document.title = `Readiness Assessment — Question ${currentQuestion}`;
   }, [currentQuestion]);
 
-  const setAnswer = useCallback((choice: AnswerChoice) => {
-    setAnswers((prev) => ({ ...prev, [currentQuestion]: choice }));
-  }, [currentQuestion]);
+  const setAnswer = useCallback(
+    (choice: AnswerChoice) => {
+      setAnswers((prev) => ({ ...prev, [currentQuestion]: choice }));
+      if (submitError) setSubmitError(null);
+    },
+    [currentQuestion, submitError]
+  );
 
   const goBack = () => {
+    if (submitting) return;
     if (currentQuestion === 1) {
       router.push('/about');
       return;
@@ -67,13 +100,57 @@ export function AssessmentClient() {
     setCurrentQuestion((q) => q - 1);
   };
 
-  const goNext = () => {
-    if (!selectedAnswer) return;
+  const submitToZoho = async (finalAnswers: Record<number, AnswerChoice>) => {
+    setSubmitting(true);
+    setSubmitError(null);
 
-    if (isLastQuestion) {
-      const result = computeDoctrineScore(answers);
+    try {
+      const result = computeDoctrineScore(finalAnswers);
+
+      const businessId =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `gybs-${Date.now()}`;
+
+      const submitRes = await fetch('/api/intake/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId,
+          ...answersToZohoPayload(finalAnswers),
+          score: result.score,
+        }),
+      });
+
+      const submitData = (await submitRes.json()) as ZohoSubmitResponse;
+
+      if (!submitRes.ok || !submitData.recordId) {
+        const zohoFieldErrors = submitData.details?.result?.[0]?.error;
+        const message =
+          (Array.isArray(submitData.errors) && submitData.errors.join(' ')) ||
+          (Array.isArray(zohoFieldErrors) && zohoFieldErrors.join(', ')) ||
+          submitData.error ||
+          'Failed to submit assessment to Zoho';
+        throw new Error(message);
+      }
+
       sessionStorage.setItem(GYBS_SCORE_RESULT_KEY, JSON.stringify(result));
       router.push('/results');
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : 'Something went wrong while submitting your assessment.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const goNext = () => {
+    if (!selectedAnswer || submitting) return;
+
+    if (isLastQuestion) {
+      const finalAnswers = { ...answers, [currentQuestion]: selectedAnswer };
+      void submitToZoho(finalAnswers);
       return;
     }
 
@@ -105,17 +182,28 @@ export function AssessmentClient() {
               </div>
             </div>
 
+            {submitError && (
+              <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+                {submitError}
+              </p>
+            )}
+
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button type="button" onClick={goBack} className="gybs-btn-secondary sm:min-w-[120px]">
+              <button
+                type="button"
+                onClick={goBack}
+                disabled={submitting}
+                className="gybs-btn-secondary sm:min-w-[120px] disabled:cursor-not-allowed disabled:opacity-40"
+              >
                 Back
               </button>
               <button
                 type="button"
                 onClick={goNext}
-                disabled={!selectedAnswer}
+                disabled={!selectedAnswer || submitting}
                 className="gybs-btn-primary sm:min-w-[160px] disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {isLastQuestion ? 'View Results' : 'Next'}
+                {submitting ? 'Submitting…' : isLastQuestion ? 'View Results' : 'Next'}
               </button>
             </div>
 

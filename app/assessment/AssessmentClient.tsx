@@ -1,142 +1,243 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { DoctrineContent, DoctrinePage } from '@/components/doctrine/DoctrinePage';
-import { ASSESSMENT_QUESTIONS, type AnswerChoice } from '@/lib/assessment-questions';
-import { computeDoctrineScore } from '@/lib/doctrine-scoring';
+import { AssessmentHeader } from '@/components/assessment/AssessmentHeader';
+import { ProgressRail } from '@/components/assessment/ProgressRail';
+import { CategoryHead } from '@/components/assessment/CategoryHead';
+import { QuestionCard } from '@/components/assessment/QuestionCard';
+import { BottomNav } from '@/components/assessment/BottomNav';
+import { CompletionOverlay } from '@/components/assessment/CompletionOverlay';
+import { CATEGORIES, TOTAL_QUESTIONS } from '@/lib/questions';
+import { computeResults } from '@/lib/scoring';
+import { loadAnswers, loadLead, saveAnswers } from '@/lib/storage';
 import { GYBS_SCORE_RESULT_KEY } from '@/lib/pathways';
+import type { Answers } from '@/lib/types';
+import styles from '@/styles/assessment.module.css';
 
-function OptionButton({
-  value,
-  label,
-  selected,
-  onSelect,
-}: {
-  value: AnswerChoice;
-  label: string;
-  selected: boolean;
-  onSelect: (value: AnswerChoice) => void;
-}) {
-  return (
-    <label
-      className={`flex cursor-pointer items-center rounded-lg border-2 px-4 py-3 text-sm font-medium transition-all duration-gybs ease-in-out md:text-base ${
-        selected
-          ? 'border-gybs-blue bg-[#EFF6FF] text-gybs-navy'
-          : 'border-gybs-border bg-white text-gybs-body hover:border-gybs-blue/40'
-      }`}
-    >
-      <input
-        type="radio"
-        name="assessment-answer"
-        value={value}
-        checked={selected}
-        onChange={() => onSelect(value)}
-        className="sr-only"
-      />
-      <span className="mr-3 font-bold text-gybs-navy">{value}.</span>
-      {label}
-    </label>
-  );
+function answersToZohoPayload(answers: Answers) {
+  const payload: Record<string, number> = {};
+  for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+    payload[`q${i}`] = answers[i];
+  }
+  return payload;
 }
 
 export function AssessmentClient() {
   const router = useRouter();
-  const [currentQuestion, setCurrentQuestion] = useState(1);
-  const [answers, setAnswers] = useState<Record<number, AnswerChoice>>({});
+  const [catIndex, setCatIndex] = useState(0);
+  const [answers, setAnswers] = useState<Answers>({});
+  const [flagged, setFlagged] = useState<Record<number, boolean>>({});
+  const [phase, setPhase] = useState<'idle' | 'leaving' | 'entering'>('entering');
+  const [completing, setCompleting] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const question = ASSESSMENT_QUESTIONS[currentQuestion - 1];
-  const selectedAnswer = answers[currentQuestion];
-  const isLastQuestion = currentQuestion === ASSESSMENT_QUESTIONS.length;
+  const category = CATEGORIES[catIndex];
+  const isLast = catIndex === CATEGORIES.length - 1;
 
   useEffect(() => {
-    document.title = `Readiness Assessment — Question ${currentQuestion}`;
-  }, [currentQuestion]);
+    setAnswers(loadAnswers());
+    setHydrated(true);
+  }, []);
 
-  const setAnswer = useCallback((choice: AnswerChoice) => {
-    setAnswers((prev) => ({ ...prev, [currentQuestion]: choice }));
-  }, [currentQuestion]);
+  useEffect(() => {
+    if (!hydrated) return;
+    saveAnswers(answers);
+  }, [answers, hydrated]);
+
+  useEffect(() => {
+    document.title = `Readiness Assessment — ${category.name}`;
+  }, [category.name]);
+
+  const answeredTotal = useMemo(
+    () => Object.keys(answers).filter((k) => answers[Number(k)] !== undefined).length,
+    [answers]
+  );
+
+  const isCategoryComplete = useCallback(
+    (index: number) => {
+      const cat = CATEGORIES[index];
+      for (let q = cat.startNum; q <= cat.endNum; q++) {
+        if (answers[q] === undefined) return false;
+      }
+      return true;
+    },
+    [answers]
+  );
+
+  const onSelect = (questionNum: number, pts: number) => {
+    setAnswers((prev) => ({ ...prev, [questionNum]: pts }));
+    setFlagged((prev) => {
+      if (!prev[questionNum]) return prev;
+      const next = { ...prev };
+      delete next[questionNum];
+      return next;
+    });
+  };
 
   const goBack = () => {
-    if (currentQuestion === 1) {
-      router.push('/about');
+    if (catIndex === 0) {
+      router.push('/#assessment');
       return;
     }
-    setCurrentQuestion((q) => q - 1);
+    setPhase('leaving');
+    window.setTimeout(() => {
+      setCatIndex((i) => i - 1);
+      setPhase('entering');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 200);
+  };
+
+  const finishAssessment = async () => {
+    const lead = loadLead();
+    if (!lead?.email?.trim() || !lead.firstName?.trim() || !lead.businessName?.trim()) {
+      router.push('/#assessment');
+      return;
+    }
+
+    setSubmitError(null);
+    setCompleting(true);
+
+    const results = computeResults(answers);
+    const fullName = `${lead.firstName} ${lead.lastName ?? ''}`.trim();
+
+    try {
+      const res = await fetch('/api/intake/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...answersToZohoPayload(answers),
+          score: results.readinessScore,
+          Name: fullName,
+          Email: lead.email.trim(),
+          Business_Name: lead.businessName.trim(),
+          ...(lead.phone?.trim() ? { Phone: lead.phone.trim() } : {}),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        const detail =
+          (Array.isArray(data.errors) && data.errors.join(', ')) ||
+          data.error ||
+          'Could not save your assessment. Please try again.';
+        throw new Error(detail);
+      }
+
+      try {
+        sessionStorage.setItem(GYBS_SCORE_RESULT_KEY, JSON.stringify(results));
+      } catch {
+        /* ignore */
+      }
+
+      router.push('/results');
+    } catch (err) {
+      setCompleting(false);
+      setSubmitError(err instanceof Error ? err.message : 'Submission failed.');
+    }
   };
 
   const goNext = () => {
-    if (!selectedAnswer) return;
+    const missing: number[] = [];
+    for (let q = category.startNum; q <= category.endNum; q++) {
+      if (answers[q] === undefined) missing.push(q);
+    }
 
-    if (isLastQuestion) {
-      const result = computeDoctrineScore(answers);
-      sessionStorage.setItem(GYBS_SCORE_RESULT_KEY, JSON.stringify(result));
-      router.push('/results');
+    if (missing.length > 0) {
+      const nextFlags: Record<number, boolean> = {};
+      missing.forEach((n) => {
+        nextFlags[n] = true;
+      });
+      setFlagged((prev) => ({ ...prev, ...nextFlags }));
+      const el = document.getElementById(`q-${missing[0]}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
-    setCurrentQuestion((q) => q + 1);
+    if (!isLast) {
+      setPhase('leaving');
+      window.setTimeout(() => {
+        setCatIndex((i) => i + 1);
+        setPhase('entering');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 200);
+      return;
+    }
+
+    void finishAssessment();
   };
 
+  const lead = hydrated ? loadLead() : null;
+  const wrapClass = [
+    styles.qWrap,
+    phase === 'leaving' ? styles.leaving : '',
+    phase === 'entering' ? styles.entering : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <DoctrinePage showBanner={false} className="!pt-6 !pb-16 md:!pt-8 md:!pb-20">
-      <DoctrineContent>
-        <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
-          <div id="assessment-questions" className="scroll-mt-24">
-            <p className="text-sm font-semibold text-gybs-muted">
-              Question {currentQuestion} of {ASSESSMENT_QUESTIONS.length}
-            </p>
-            <h1 className="mt-2 text-display-h2-sm text-gybs-ink md:text-display-h2">Readiness Assessment</h1>
+    <div style={{ paddingBottom: 96, minHeight: '100vh', background: 'var(--cream)' }}>
+      <AssessmentHeader lead={lead} />
+      <ProgressRail
+        categories={CATEGORIES}
+        currentIndex={catIndex}
+        isCategoryComplete={isCategoryComplete}
+        answeredTotal={answeredTotal}
+        totalQuestions={TOTAL_QUESTIONS}
+      />
+      <CategoryHead
+        category={category}
+        index={catIndex}
+        totalCategories={CATEGORIES.length}
+        totalQuestions={TOTAL_QUESTIONS}
+      />
 
-            <div className="mt-6 rounded-xl border border-gybs-border bg-gybs-light p-6 md:p-8">
-              <p className="text-lg font-semibold text-gybs-ink md:text-xl">{question.question}</p>
-              <div className="mt-6 flex flex-col gap-3">
-                {question.options.map((option) => (
-                  <OptionButton
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                    selected={selectedAnswer === option.value}
-                    onSelect={setAnswer}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button type="button" onClick={goBack} className="gybs-btn-secondary sm:min-w-[120px]">
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={goNext}
-                disabled={!selectedAnswer}
-                className="gybs-btn-primary sm:min-w-[160px] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {isLastQuestion ? 'View Results' : 'Next'}
-              </button>
-            </div>
-
-            <p className="mt-5 text-center text-sm text-gybs-muted">
-              <Link href="/about" className="text-gybs-blue hover:text-gybs-navy">
-                About the assessment
-              </Link>
-            </p>
-          </div>
-          <div className="flex h-full items-center overflow-hidden rounded-2xl border border-gybs-border bg-white shadow-gybs-card">
-            <Image
-              src="/images/assessment-section-banner.png"
-              alt="Assessment readiness illustration"
-              width={1024}
-              height={768}
-              className="h-auto w-full"
-              priority
+      <div className={styles.qStage}>
+        <div className={`${styles.wrap} ${wrapClass}`}>
+          {category.questions.map((question, i) => (
+            <QuestionCard
+              key={question.num}
+              question={question}
+              totalQuestions={TOTAL_QUESTIONS}
+              selectedValue={answers[question.num]}
+              flagged={Boolean(flagged[question.num])}
+              delayMs={i * 45}
+              onSelect={onSelect}
             />
-          </div>
+          ))}
         </div>
-      </DoctrineContent>
-    </DoctrinePage>
+      </div>
+
+      {submitError && (
+        <div className={styles.wrap} style={{ paddingBottom: 12 }}>
+          <p
+            role="alert"
+            style={{
+              color: 'var(--red)',
+              background: 'rgba(165,28,44,.08)',
+              border: '1px solid rgba(165,28,44,.25)',
+              borderRadius: 8,
+              padding: '12px 14px',
+              fontSize: '0.9rem',
+            }}
+          >
+            {submitError}
+          </p>
+        </div>
+      )}
+
+      <BottomNav
+        canGoBack
+        onBack={goBack}
+        onNext={goNext}
+        answeredTotal={answeredTotal}
+        totalQuestions={TOTAL_QUESTIONS}
+        nextLabel={completing ? 'Saving…' : isLast ? 'See My Score' : 'Next Section →'}
+      />
+
+      <CompletionOverlay show={completing} />
+    </div>
   );
 }

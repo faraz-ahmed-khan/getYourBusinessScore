@@ -1,156 +1,167 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { DoctrineContent, DoctrinePage } from '@/components/doctrine/DoctrinePage';
-import {
-  PATHWAY_DESCRIPTIONS,
-  PATHWAY_LABELS,
-  type DoctrineScoreResult,
-  type PathwayOption,
-} from '@/lib/doctrine-scoring';
-import { getReadinessLevelInfo, READINESS_LEVELS } from '@/lib/readiness-levels';
+import { ResultsHeader } from '@/components/results/ResultsHeader';
+import { ScoreGauge } from '@/components/results/ScoreGauge';
+import { CategoryRow } from '@/components/results/CategoryRow';
+import { NextStepCard } from '@/components/results/NextStepCard';
+import { computeResults, getTier, TIPS } from '@/lib/scoring';
+import { TOTAL_QUESTIONS } from '@/lib/questions';
+import { clearAnswers, loadAnswers } from '@/lib/storage';
 import { GYBS_SCORE_RESULT_KEY } from '@/lib/pathways';
+import type { Results } from '@/lib/types';
+import styles from '@/styles/results.module.css';
 
 export function ResultsClient() {
-  const [data, setData] = useState<DoctrineScoreResult | null>(null);
-  const [displayScore, setDisplayScore] = useState(0);
-  const pathwaysRef = useRef<HTMLDivElement>(null);
+  const [results, setResults] = useState<Results | null>(null);
+  const [incomplete, setIncomplete] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem(GYBS_SCORE_RESULT_KEY);
-    if (!raw) {
-      setData(null);
+    const answers = loadAnswers();
+    const answered = Object.keys(answers).length;
+    setIncomplete(answered > 0 && answered < TOTAL_QUESTIONS);
+
+    if (answered > 0) {
+      const computed = computeResults(answers);
+      setResults(computed);
+      try {
+        sessionStorage.setItem(GYBS_SCORE_RESULT_KEY, JSON.stringify(computed));
+      } catch {
+        /* ignore */
+      }
       return;
     }
 
     try {
-      const parsed = JSON.parse(raw) as DoctrineScoreResult;
-      setData(parsed);
-
-      const target = Number(parsed.score || 0);
-      const duration = 1500;
-      const start = performance.now();
-
-      const tick = (now: number) => {
-        const t = Math.min(1, (now - start) / duration);
-        const eased = 1 - Math.pow(1 - t, 3);
-        setDisplayScore(Math.round(target * eased));
-        if (t < 1) requestAnimationFrame(tick);
-      };
-
-      requestAnimationFrame(tick);
+      const raw = sessionStorage.getItem(GYBS_SCORE_RESULT_KEY);
+      if (raw) {
+        setResults(JSON.parse(raw) as Results);
+        return;
+      }
     } catch {
-      setData(null);
+      /* ignore */
     }
+
+    setResults(null);
   }, []);
 
-  const levelInfo = useMemo(() => {
-    if (!data) return null;
-    return getReadinessLevelInfo(data.level);
-  }, [data]);
+  const topGaps = useMemo(() => {
+    if (!results) return [];
+    return [...results.cats]
+      .map((cat, index) => ({ cat, index }))
+      .sort((a, b) => a.cat.pct - b.cat.pct || a.index - b.index)
+      .slice(0, 3);
+  }, [results]);
 
-  const scrollToPathways = () => {
-    pathwaysRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  if (!data || !levelInfo) {
+  if (!results) {
     return (
-      <DoctrinePage showBanner={false}>
-        <DoctrineContent narrow>
-          <p className="text-gybs-muted">No results found. Complete the assessment to see your readiness score.</p>
-          <Link href="/assessment" className="gybs-btn-primary mt-6 inline-flex">
+      <div style={{ minHeight: '100vh', background: 'var(--cream)' }}>
+        <ResultsHeader />
+        <div className={styles.wrap} style={{ padding: '64px 24px', textAlign: 'center' }}>
+          <p style={{ color: 'var(--ink-soft)' }}>
+            No results found. Complete the assessment to see your readiness score.
+          </p>
+          <Link href="/#assessment" style={{ display: 'inline-block', marginTop: 24, color: 'var(--navy-800)' }}>
             Begin Assessment
           </Link>
-        </DoctrineContent>
-      </DoctrinePage>
+        </div>
+      </div>
     );
   }
 
   return (
-    <DoctrinePage showBanner={false}>
-      <DoctrineContent>
-        <h1 className="text-display-h1-sm text-gybs-ink md:text-display-h1">Your Readiness Score</h1>
+    <div style={{ minHeight: '100vh', background: 'var(--cream)' }}>
+      <ResultsHeader />
 
-        <div className="mt-10 rounded-xl border border-gybs-border bg-gybs-light p-8 md:p-10">
-          <p className="text-[72px] font-bold leading-none text-gybs-navy md:text-[96px]">{displayScore}</p>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-gybs-body">
-            Your score is based on your answers across documentation, operations, financials, and market readiness.
-          </p>
-          <p className="mt-4 inline-flex rounded-full border border-gybs-blue/30 bg-gybs-blue/10 px-4 py-2 text-sm font-semibold text-gybs-navy">
-            {levelInfo.title}
-          </p>
+      <div className={`${styles.incompleteBar} ${incomplete ? styles.show : ''}`}>
+        You answered {results.answeredCount} of {TOTAL_QUESTIONS} questions.{' '}
+        <Link href="/assessment">Finish the assessment</Link> for a complete score.
+      </div>
+
+      <section className={styles.scoreHero}>
+        <div className={styles.shInner}>
+          <p className={styles.eyebrow}>Your Initial Readiness Score</p>
+          <ScoreGauge score={results.readinessScore} color={results.band.color} />
+          <div className={styles.bandPill}>
+            <span className={styles.dot} style={{ background: results.band.color }} />
+            {results.band.key} Stage
+          </div>
+          <h1 className={styles.shTitle}>
+            Your Readiness Score: {results.readinessScore}. {results.band.headline}
+          </h1>
+          <p className={styles.shSub}>{results.band.body}</p>
         </div>
+      </section>
 
-        <section className="mt-12">
-          <h2 className="text-xl font-bold text-gybs-ink">Readiness Level Descriptions</h2>
-          <ul className="mt-6 space-y-4">
-            {READINESS_LEVELS.map((level) => (
-              <li
-                key={level.level}
-                className={`rounded-xl border p-5 ${
-                  level.level === data.level
-                    ? 'border-gybs-blue bg-[#EFF6FF]'
-                    : 'border-gybs-border bg-white'
-                }`}
-              >
-                <p className="font-bold text-gybs-ink">{level.title}</p>
-                <p className="mt-1 text-sm leading-relaxed text-gybs-body">{level.description}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section ref={pathwaysRef} className="mt-12 scroll-mt-24">
-          <h2 className="text-xl font-bold text-gybs-ink">Recommended Pathway</h2>
-          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-gybs-body">
-            Based on your readiness score, the following pathway options are available. Choose the pathway that best
-            fits your business needs.
-          </p>
-
-          <ul className="mt-8 space-y-4">
-            {(['sba', 'supplier', 'subscription'] as PathwayOption[]).map((pathway) => {
-              const available = data.availablePathways.includes(pathway);
+      <section className={styles.block}>
+        <div className={styles.wrap}>
+          <div className={styles.sectionHead}>
+            <p className={styles.eyebrow}>Your Top Gaps</p>
+            <h2>Where to focus first</h2>
+            <p>Your 2–3 lowest-scoring categories — these are the gaps most likely to block an opportunity.</p>
+          </div>
+          <div className={styles.catList}>
+            {topGaps.map(({ cat }, i) => {
+              const tier = getTier(cat.pct);
               return (
-                <li
-                  key={pathway}
-                  className={`rounded-xl border p-6 ${
-                    available ? 'border-gybs-border bg-white' : 'border-gybs-border/60 bg-gybs-light opacity-70'
-                  }`}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <h3 className="text-lg font-bold text-gybs-ink">{PATHWAY_LABELS[pathway]}</h3>
-                    {!available && (
-                      <span className="rounded-full bg-gybs-border px-3 py-1 text-xs font-semibold text-gybs-muted">
-                        Locked
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-2 text-sm leading-relaxed text-gybs-body">{PATHWAY_DESCRIPTIONS[pathway]}</p>
-                  {pathway === 'subscription' && available && (
-                    <p className="mt-3 text-xs text-gybs-muted">
-                      Opportunity access remains locked until a Misconi USA representative approves activation.
-                    </p>
-                  )}
-                </li>
+                <CategoryRow
+                  key={cat.name}
+                  result={cat}
+                  rank={i + 1}
+                  tier={tier}
+                  tip={TIPS[cat.name]?.[tier] ?? ''}
+                  delayMs={i * 60}
+                />
               );
             })}
-          </ul>
-        </section>
-
-        <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
-          <Link href="/subscribe" className="gybs-btn-primary text-center">
-            Continue to Subscription Gateway
-          </Link>
-          <button type="button" onClick={scrollToPathways} className="gybs-btn-secondary">
-            View Your Readiness Pathway Options
-          </button>
+          </div>
         </div>
+      </section>
 
-        <p className="mt-4 text-sm text-gybs-muted">
-          Subscription is offered after your Initial Business Score.
-        </p>
-      </DoctrineContent>
-    </DoctrinePage>
+      <section className={`${styles.block} ${styles.nextBand}`}>
+        <div className={styles.wrap}>
+          <div className={styles.sectionHead}>
+            <p className={styles.eyebrow}>Recommended Next Step</p>
+            <h2>Close the gaps that matter most</h2>
+            <p>Based on your score band, here&apos;s the preparation pathway that fits.</p>
+          </div>
+          <NextStepCard band={results.band} />
+          <p className={styles.callLine}>
+            Want help walking through this?{' '}
+            <a href="mailto:hello@misconiusa.com">Book a free readiness call</a>
+          </p>
+        </div>
+      </section>
+
+      <div className={styles.retakeBand}>
+        <button
+          type="button"
+          onClick={() => {
+            clearAnswers();
+            try {
+              sessionStorage.removeItem(GYBS_SCORE_RESULT_KEY);
+            } catch {
+              /* ignore */
+            }
+            window.location.href = '/#assessment';
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--navy-800)',
+            textDecoration: 'underline',
+            cursor: 'pointer',
+            fontSize: '0.86rem',
+          }}
+        >
+          Retake the assessment
+        </button>
+      </div>
+
+      <footer className={styles.site}>
+        <p>© {new Date().getFullYear()} Misconi USA · Get Your Business Score</p>
+      </footer>
+    </div>
   );
 }

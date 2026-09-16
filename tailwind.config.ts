@@ -23,7 +23,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'IBM Plex Sans', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Fraunces', 'Georgia', 'serif'],
       },
       fontSize: {
         'display-h1': ['3.5rem', { lineHeight: '1.2', fontWeight: '700' }],

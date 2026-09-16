@@ -23,16 +23,56 @@
   --color-text-muted: #64748b;
   --color-border: #e2e8f0;
   --color-surface: #ffffff;
+
+  /* Marketing UI tokens — matched to gybs-website reference HTML */
+  --navy-950: #0d2340;
+  --navy-900: #122f50;
+  --navy-800: #17365d;
+  --navy-700: #1e4373;
+  --navy-100: #eaf0f6;
+  --orange: #d9691f;
+  --orange-bright: #eb7626;
+  --gold: #c9962c;
+  --gold-bright: #e0ad3f;
+  --red: #a51c2c;
+  --green: #2e7b55;
+  --cream: #f7f3eb;
+  --cream-deep: #efe8da;
+  --paper: #fffdf9;
+  --ink: #1c2a38;
+  --ink-soft: #4b6378;
+  --line: #dfd6c2;
+  --line-cool: #cbd7e1;
+  --radius: 14px;
+  --sans: var(--font-sans), 'IBM Plex Sans', system-ui, sans-serif;
+  --serif: var(--font-serif), Fraunces, Georgia, serif;
 }
 
 body {
-  color: var(--gybs-body);
-  background: #ffffff;
+  color: var(--ink);
+  background: var(--cream);
+  font-family: var(--sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--serif);
+  color: var(--navy-900);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 *:focus-visible {
-  outline: 2px solid var(--gybs-blue);
+  outline: 3px solid var(--gold-bright);
   outline-offset: 2px;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 @layer components {

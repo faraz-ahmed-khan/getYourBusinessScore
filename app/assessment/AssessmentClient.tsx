@@ -120,6 +120,8 @@ export function AssessmentClient() {
       if (!res.ok || !data.success) {
         const detail =
           (Array.isArray(data.errors) && data.errors.join(', ')) ||
+          (typeof data.details?.description === 'string' && data.details.description) ||
+          (typeof data.details?.message === 'string' && data.details.message) ||
           data.error ||
           'Could not save your assessment. Please try again.';
         throw new Error(detail);

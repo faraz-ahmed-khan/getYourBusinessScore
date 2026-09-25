@@ -9,7 +9,7 @@
 
 import { isCrmConfigured, zohoCrmJson } from './zoho-crm';
 import { getDefaultMwqId } from './crm-mwq';
-import { createTask, type TaskRecord } from './crm-tasks';
+import { createTask, updateTask, type TaskRecord } from './crm-tasks';
 import { getBand } from './scoring';
 
 export type CrmSyncInput = {
@@ -191,24 +191,62 @@ export async function syncAssessmentToCrm(input: CrmSyncInput): Promise<CrmSyncR
       ? 'GYBS integration connection test'
       : `GYBS assessment complete — ${input.businessName}`.slice(0, 100);
 
-    const { task, duplicate, relatedToLinked, relatedToWarning } =
+    // Create as Integration (ownerId null) so Related To / What_Id can stick.
+    // Zoho strips What_Id when Integration creates the Task already owned by Steven.
+    // After linkage, reassign real intakes to Steven / Management.
+    const managementOwnerId = process.env.ZOHO_DEFAULT_TASK_OWNER_ID;
+
+    let { task, duplicate, relatedToLinked, relatedToWarning } =
       await createTask({
         subject,
         whatId: mwqId,
         whoId: contactId,
         gybsKey,
         description: buildOpsDescription(input, band.key),
-        // Connection test: Owner = Integration (null) so the task is visible under
-        // MWQ-1 Open Activities / Tasks search. Real intakes use Steven / Management.
-        ownerId: input.connectionTest
-          ? null
-          : process.env.ZOHO_DEFAULT_TASK_OWNER_ID,
+        ownerId: null,
         status: 'Not Started',
         priority: 'Normal',
       });
 
+    if (
+      relatedToLinked &&
+      !input.connectionTest &&
+      managementOwnerId &&
+      task.id
+    ) {
+      const ownerUpdate = await updateTask(task.id, {
+        ownerId: managementOwnerId,
+      });
+      if (!ownerUpdate.ok) {
+        console.warn(
+          '[crm-sync] Task linked to MWQ but owner reassign to Management failed',
+          ownerUpdate.data
+        );
+      } else {
+        console.log('[crm-sync] Task owner reassigned to Management', {
+          taskId: task.id,
+          ownerId: managementOwnerId,
+        });
+      }
+    }
+
     if (relatedToWarning) {
-      console.warn('[crm-sync]', relatedToWarning);
+      console.warn('[crm-sync] Related To not linked', {
+        taskId: task.id,
+        relatedToLinked: false,
+        relatedToWarning,
+        whatId: task.What_Id ?? null,
+        seModule: task['$se_module'] ?? null,
+      });
+    } else {
+      console.log('[crm-sync] Task ready', {
+        taskId: task.id,
+        duplicate,
+        relatedToLinked,
+        whatId: task.What_Id ?? null,
+        seModule: task['$se_module'] ?? null,
+        subject: task.Subject,
+      });
     }
 
     return {

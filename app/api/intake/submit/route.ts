@@ -131,10 +131,16 @@ export async function POST(request: Request) {
     console.log('[intake/submit] zohoData', JSON.stringify(zohoData));
 
     if (!zohoRes.ok) {
+      const zohoMessage =
+        (typeof zohoData?.description === 'string' && zohoData.description) ||
+        (typeof zohoData?.message === 'string' && zohoData.message) ||
+        'Zoho Creator add record failed';
+      const zohoCode =
+        zohoData?.code != null ? ` (Creator code ${zohoData.code})` : '';
       return NextResponse.json(
         {
           success: false,
-          error: 'Zoho add record failed',
+          error: `${zohoMessage}${zohoCode}`,
           details: zohoData,
         },
         { status: 500 }
@@ -172,6 +178,20 @@ export async function POST(request: Request) {
 
     if (crm.error) {
       console.error('[intake/submit] CRM sync error', crm.error);
+    } else if (crm.skipped) {
+      console.warn('[intake/submit] CRM sync skipped', crm.reason);
+    } else {
+      console.log('[intake/submit] CRM sync', {
+        contactId: crm.contactId,
+        accountId: crm.accountId,
+        taskId: crm.task?.id,
+        subject: crm.task?.Subject,
+        duplicate: crm.duplicate === true,
+        relatedToLinked: crm.relatedToLinked === true,
+        relatedToWarning: crm.relatedToWarning || null,
+        whatId: crm.task?.What_Id ?? null,
+        seModule: crm.task?.['$se_module'] ?? null,
+      });
     }
 
     return NextResponse.json({
@@ -186,6 +206,8 @@ export async function POST(request: Request) {
         contactId: crm.contactId,
         accountId: crm.accountId,
         taskId: crm.task?.id,
+        relatedToLinked: crm.relatedToLinked === true,
+        relatedToWarning: crm.relatedToWarning || null,
       },
       raw: zohoData,
     });

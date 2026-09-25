@@ -199,12 +199,6 @@ async function linkTaskToWhat(
         body: { data: [buildWhatLinkRecord(whatId, seModule)] },
         label: `PUT Tasks $se_module=${seModule}`,
       },
-      {
-        method: 'PUT',
-        path: `/${seModule}/${encodeURIComponent(whatId)}/Tasks/${encodeURIComponent(taskId)}`,
-        body: { data: [{ id: taskId }] },
-        label: `PUT ${seModule} related Tasks`,
-      },
     ];
 
     for (const attempt of attempts) {

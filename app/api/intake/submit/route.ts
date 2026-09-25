@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { zohoFetch } from '@/lib/zoho';
+import { syncAssessmentToCrm } from '@/lib/crm-sync';
 import { TOTAL_QUESTIONS } from '@/lib/questions';
 
 const POINT_VALUES = [0, 1, 2] as const;
@@ -157,10 +158,35 @@ export async function POST(request: Request) {
       );
     }
 
+    // Creator is authoritative for q1–q36. CRM gets ops reference + MWQ task only.
+    // CRM failure must not fail the user-facing assessment submit.
+    const crm = await syncAssessmentToCrm({
+      creatorRecordId: String(recordId),
+      businessId,
+      name: body.Name!.trim(),
+      email: body.Email!.trim(),
+      businessName: body.Business_Name!.trim(),
+      phone: body.Phone?.trim(),
+      score: Number(body.score),
+    });
+
+    if (crm.error) {
+      console.error('[intake/submit] CRM sync error', crm.error);
+    }
+
     return NextResponse.json({
       success: true,
       recordId,
       businessId,
+      crm: {
+        skipped: crm.skipped === true,
+        reason: crm.reason,
+        error: crm.error,
+        duplicate: crm.duplicate === true,
+        contactId: crm.contactId,
+        accountId: crm.accountId,
+        taskId: crm.task?.id,
+      },
       raw: zohoData,
     });
   } catch (e) {

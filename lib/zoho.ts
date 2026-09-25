@@ -16,21 +16,19 @@ const isRateLimitedTokenError = (body: string) =>
   body.includes('too many requests') || body.includes('Access Denied');
 
 /**
- * Dev-only: Windows / corporate networks often fail Zoho TLS chain verification.
- * Set ZOHO_INSECURE_TLS=false in .env to disable.
+ * Opt-in only: relax TLS verification for local Zoho calls on broken corporate chains.
+ * Set ZOHO_INSECURE_TLS=true in .env to enable. Never on by default.
  */
 function configureDevTls(): void {
   if (process.env.NODE_ENV === 'production') return;
-  if (process.env.ZOHO_INSECURE_TLS === 'false') return;
-  if (process.env.ZOHO_INSECURE_TLS === 'true' || process.env.NODE_ENV === 'development') {
-    if (process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0') {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-      if (!loggedInsecureTlsWarning) {
-        loggedInsecureTlsWarning = true;
-        console.warn(
-          '[zoho] TLS verification relaxed for local development. Set ZOHO_INSECURE_TLS=false to disable.'
-        );
-      }
+  if (process.env.ZOHO_INSECURE_TLS !== 'true') return;
+  if (process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0') {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    if (!loggedInsecureTlsWarning) {
+      loggedInsecureTlsWarning = true;
+      console.warn(
+        '[zoho] TLS verification disabled (ZOHO_INSECURE_TLS=true). Use only for local development.'
+      );
     }
   }
 }

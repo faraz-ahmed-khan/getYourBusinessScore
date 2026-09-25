@@ -46,13 +46,19 @@ export function ResultsClient() {
     setResults(null);
   }, []);
 
-  const topGaps = useMemo(() => {
+  const rankedCats = useMemo(() => {
     if (!results) return [];
     return [...results.cats]
       .map((cat, index) => ({ cat, index }))
-      .sort((a, b) => a.cat.pct - b.cat.pct || a.index - b.index)
-      .slice(0, 3);
+      .sort((a, b) => a.cat.pct - b.cat.pct || a.index - b.index);
   }, [results]);
+
+  /** Categories below the strength threshold (same cut as getTier high = >=70). */
+  const realGaps = useMemo(
+    () => rankedCats.filter(({ cat }) => Number(cat.pct) < 70).slice(0, 3),
+    [rankedCats]
+  );
+  const hasRealGaps = realGaps.length > 0;
 
   if (!results) {
     return (
@@ -97,25 +103,37 @@ export function ResultsClient() {
       <section className={styles.block}>
         <div className={styles.wrap}>
           <div className={styles.sectionHead}>
-            <p className={styles.eyebrow}>Your Top Gaps</p>
-            <h2>Where to focus first</h2>
-            <p>Your 2–3 lowest-scoring categories — these are the gaps most likely to block an opportunity.</p>
+            {hasRealGaps ? (
+              <>
+                <p className={styles.eyebrow}>Your Top Gaps</p>
+                <h2>Where to focus first</h2>
+                <p>
+                  Your 2–3 lowest-scoring categories — these are the gaps most likely to block an opportunity.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2>A few areas to tighten before you scale up.</h2>
+              </>
+            )}
           </div>
-          <div className={styles.catList}>
-            {topGaps.map(({ cat }, i) => {
-              const tier = getTier(cat.pct);
-              return (
-                <CategoryRow
-                  key={cat.name}
-                  result={cat}
-                  rank={i + 1}
-                  tier={tier}
-                  tip={TIPS[cat.name]?.[tier] ?? ''}
-                  delayMs={i * 60}
-                />
-              );
-            })}
-          </div>
+          {hasRealGaps && (
+            <div className={styles.catList}>
+              {realGaps.map(({ cat }, i) => {
+                const tier = getTier(cat.pct);
+                return (
+                  <CategoryRow
+                    key={cat.name}
+                    result={cat}
+                    rank={i + 1}
+                    tier={tier}
+                    tip={TIPS[cat.name]?.[tier] ?? ''}
+                    delayMs={i * 60}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -123,8 +141,17 @@ export function ResultsClient() {
         <div className={styles.wrap}>
           <div className={styles.sectionHead}>
             <p className={styles.eyebrow}>Recommended Next Step</p>
-            <h2>Close the gaps that matter most</h2>
-            <p>Based on your score band, here&apos;s the preparation pathway that fits.</p>
+            {hasRealGaps ? (
+              <>
+                <h2>Close the gaps that matter most</h2>
+                <p>Based on your score band, here&apos;s the preparation pathway that fits.</p>
+              </>
+            ) : (
+              <>
+                <h2>{results.band.nextHeadline}</h2>
+                <p>{results.band.nextBody}</p>
+              </>
+            )}
           </div>
           <NextStepCard band={results.band} />
           <p className={styles.callLine}>

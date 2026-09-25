@@ -2,11 +2,16 @@ import { Category } from "./types";
 
 /**
  * Source of truth for all 36 questions, in the exact wording and scoring
- * from "GYBS Readiness Questionnaire v3 FINAL". Each question is worth
- * 0-2 points; multiple-choice questions give the gradation (2/1/0),
- * yes/no questions score 2 or 0. 36 questions x 2 pts = 72 possible,
- * scaled to a 0-100 score. Edit copy and options here — nothing in the
- * assessment UI needs to change when this data changes.
+ * from "GYBS Readiness Questionnaire v3 FINAL".
+ *
+ * Question types (live approved questionnaire — correct supporting docs if they
+ * still say 27/9): **29 Multiple-Choice + 7 Yes-No = 36 total**. Website copy
+ * follows the question list, not a summary line.
+ *
+ * Each question is worth 0-2 points; multiple-choice questions give the
+ * gradation (2/1/0), yes/no questions score 2 or 0. 36 questions x 2 pts = 72
+ * possible, scaled to a 0-100 score. Edit copy and options here — nothing in
+ * the assessment UI needs to change when this data changes.
  */
 const RAW_CATEGORIES: (Omit<Category, "startNum" | "endNum" | "questions"> & {
   questions: Omit<Category["questions"][number], "num">[];

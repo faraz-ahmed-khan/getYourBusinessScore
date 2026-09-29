@@ -14,8 +14,8 @@ export function SiteFooter() {
             <a href="#how-it-works">How It Works</a>
             <a href="#about-ceo">About GYBS</a>
             <a href="#packages">Packages</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
           </div>
         </div>
         <p className={styles.footLegal}>

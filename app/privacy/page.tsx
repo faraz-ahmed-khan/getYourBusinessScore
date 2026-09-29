@@ -35,7 +35,7 @@ function Section({
 
 export default function PrivacyPage() {
   return (
-    <DoctrinePage>
+    <DoctrinePage showBanner={false}>
       <DoctrineContent narrow>
         <h1 className="text-display-h1-sm text-gybs-ink md:text-display-h1">
           GYBS Privacy Policy

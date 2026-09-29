@@ -26,7 +26,7 @@ function Section({
 
 export default function TermsPage() {
   return (
-    <DoctrinePage>
+    <DoctrinePage showBanner={false}>
       <DoctrineContent narrow>
         <h1 className="text-display-h1-sm text-gybs-ink md:text-display-h1">
           GYBS Terms and Conditions

@@ -14,7 +14,7 @@ import { SiteFooter } from '@/components/home/SiteFooter';
 export function HomePageClient() {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader isHomePage />
       <main>
         <Hero />
         <HowItWorks />

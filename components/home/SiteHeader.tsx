@@ -2,11 +2,13 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/Button";
 import styles from "@/styles/home.module.css";
 
-export function SiteHeader() {
+export function SiteHeader({ isHomePage = false }: { isHomePage?: boolean }) {
+  const sectionHref = (section: string) => `${isHomePage ? '' : '/'}#${section}`;
+
   return (
     <header className={styles.site}>
       <div className={styles.siteBar}>
-        <a className={styles.brand} href="#top">
+        <a className={styles.brand} href={sectionHref('top')}>
           <Logo width={38} height={44} />
           <span className={styles.brandCopy}>
             <span className={styles.gybs}>GYBS</span>
@@ -15,11 +17,11 @@ export function SiteHeader() {
           </span>
         </a>
         <nav className={styles.mainNav} aria-label="Primary">
-          <a href="#how-it-works">How It Works</a>
-          <a href="#about-ceo">About GYBS</a>
-          <a href="#packages">Packages</a>
+          <a href={sectionHref('how-it-works')}>How It Works</a>
+          <a href={sectionHref('about-ceo')}>About GYBS</a>
+          <a href={sectionHref('packages')}>Packages</a>
         </nav>
-        <Button href="#assessment" variant="primary">
+        <Button href={sectionHref('assessment')} variant="primary">
           Start Assessment
         </Button>
       </div>

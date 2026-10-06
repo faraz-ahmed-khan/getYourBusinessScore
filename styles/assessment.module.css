@@ -4,6 +4,14 @@
   header.site{ position:sticky; top:0; z-index:50; background:var(--navy-900); border-bottom:4px solid var(--orange-bright); }
   .siteBar{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 24px; max-width:1180px; margin:0 auto; }
   .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; }
+  .brandLogo{
+    display:inline-flex;
+    align-items:center;
+    background:#fff;
+    border-radius:6px;
+    padding:4px 8px;
+    line-height:0;
+  }
   .brandCopy{ line-height:1.15; }
   .brandCopy .gybs{ font-family:var(--serif); font-weight:700; font-size:1.25rem; color:#fff; }
   .brandCopy .tag{ font-family:var(--sans); font-size:.62rem; letter-spacing:.13em; color:var(--gold-bright); text-transform:uppercase; }

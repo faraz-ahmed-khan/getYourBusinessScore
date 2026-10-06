@@ -7,8 +7,9 @@ export function SiteFooter() {
       <div className={styles.wrap}>
         <div className={styles.footRow}>
           <div className={styles.footBrand}>
-            <Logo width={24} height={28} />
-            <span className={styles.gybs}>GYBS</span>
+            <span className={styles.brandLogo}>
+              <Logo width={150} height={42} />
+            </span>
           </div>
           <div className={styles.footLinks}>
             <a href="#how-it-works">How It Works</a>

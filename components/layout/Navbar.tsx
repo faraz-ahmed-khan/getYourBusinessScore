@@ -41,10 +41,15 @@ export function Navbar() {
     >
       <div className="mx-auto flex h-full max-w-content items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <div className="relative h-10 w-[100px] sm:h-11 sm:w-[120px]">
-            <Image src="/images/logo.png" alt="GYBS" fill className="object-contain object-left" priority />
+          <div className="relative h-11 w-[180px] sm:h-12 sm:w-[220px]">
+            <Image
+              src="/images/logo.png"
+              alt="GYBS — Get Your Business Score"
+              fill
+              className="object-contain object-left"
+              priority
+            />
           </div>
-          <span className="sr-only">GYBS</span>
         </Link>
 
         <div className="flex items-center gap-3">

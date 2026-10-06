@@ -4,6 +4,14 @@
   header.site{ background:var(--navy-900); border-bottom:4px solid var(--orange-bright); }
   .siteBar{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 24px; max-width:1180px; margin:0 auto; }
   .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; }
+  .brandLogo{
+    display:inline-flex;
+    align-items:center;
+    background:#fff;
+    border-radius:6px;
+    padding:4px 8px;
+    line-height:0;
+  }
   .brandCopy .gybs{ font-family:var(--serif); font-weight:700; font-size:1.3rem; color:#fff; }
   .brandCopy .tag{ font-size:.62rem; letter-spacing:.13em; color:var(--gold-bright); text-transform:uppercase; }
   /* Buttons live in components/Button.tsx + Button.module.css — use <Button> here. */

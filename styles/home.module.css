@@ -19,7 +19,14 @@
     gap:20px; padding:14px 28px;
   }
   .brand{ display:flex; align-items:center; gap:12px; text-decoration:none; }
-  .brand svg{ flex:0 0 auto; }
+  .brandLogo{
+    display:inline-flex;
+    align-items:center;
+    background:#fff;
+    border-radius:6px;
+    padding:4px 8px;
+    line-height:0;
+  }
   .brandCopy{ line-height:1.15; }
   .brandCopy .gybs{ font-family:var(--serif); font-weight:700; font-size:1.5rem; color:#fff; letter-spacing:.01em; }
   .brandCopy .tag{ font-family:var(--sans); font-size:.66rem; letter-spacing:.14em; color:var(--gold-bright); text-transform:uppercase; }
@@ -243,6 +250,14 @@
   footer.site{ background:#0d2340; color:#9db4cb; padding:34px 0 30px; }
   .footRow{ display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; }
   .footBrand{ display:flex; align-items:center; gap:10px; }
+  .footBrand .brandLogo{
+    display:inline-flex;
+    align-items:center;
+    background:#fff;
+    border-radius:6px;
+    padding:4px 8px;
+    line-height:0;
+  }
   .footBrand .gybs{ font-family:var(--serif); font-weight:700; color:#fff; font-size:1.1rem; }
   .footLinks{ display:flex; gap:22px; flex-wrap:wrap; font-size:.86rem; }
   .footLinks a{ text-decoration:none; color:#9db4cb; }

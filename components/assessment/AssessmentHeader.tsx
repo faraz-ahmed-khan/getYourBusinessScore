@@ -9,11 +9,8 @@ export function AssessmentHeader({ lead }: { lead: Lead | null }) {
     <header className={styles.site}>
       <div className={styles.siteBar}>
         <a className={styles.brand} href="/">
-          <Logo width={30} height={35} />
-          <span className={styles.brandCopy}>
-            <span className={styles.gybs}>GYBS</span>
-            <br />
-            <span className={styles.tag}>Business Readiness Assessment</span>
+          <span className={styles.brandLogo}>
+            <Logo width={160} height={46} priority />
           </span>
         </a>
         <div className={styles.headerNote}>

@@ -7,8 +7,13 @@ export function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-10">
         <div className="flex flex-col items-start gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative h-10 w-20">
-              <Image src="/images/logo.png" alt="GYBS Logo" fill className="object-contain object-left" />
+            <div className="relative h-11 w-[180px] rounded bg-white px-1 py-0.5">
+              <Image
+                src="/images/logo.png"
+                alt="GYBS — Get Your Business Score"
+                fill
+                className="object-contain object-left"
+              />
             </div>
             <p className="text-sm text-slate-300">The national readiness gateway for businesses of every size.</p>
           </div>

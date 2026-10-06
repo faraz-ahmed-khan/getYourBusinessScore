@@ -7,11 +7,8 @@ export function ResultsHeader() {
     <header className={styles.site}>
       <div className={styles.siteBar}>
         <a className={styles.brand} href="/">
-          <Logo width={30} height={35} />
-          <span className={styles.brandCopy}>
-            <span className={styles.gybs}>GYBS</span>
-            <br />
-            <span className={styles.tag}>Your Readiness Score</span>
+          <span className={styles.brandLogo}>
+            <Logo width={160} height={46} priority />
           </span>
         </a>
         <Button href="/#packages" variant="outlineLight">

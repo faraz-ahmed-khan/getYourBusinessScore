@@ -9,11 +9,8 @@ export function SiteHeader({ isHomePage = false }: { isHomePage?: boolean }) {
     <header className={styles.site}>
       <div className={styles.siteBar}>
         <a className={styles.brand} href={sectionHref('top')}>
-          <Logo width={38} height={44} />
-          <span className={styles.brandCopy}>
-            <span className={styles.gybs}>GYBS</span>
-            <br />
-            <span className={styles.tag}>A Misconi USA Readiness System</span>
+          <span className={styles.brandLogo}>
+            <Logo width={190} height={54} priority />
           </span>
         </a>
         <nav className={styles.mainNav} aria-label="Primary">

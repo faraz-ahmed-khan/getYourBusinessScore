@@ -49,7 +49,7 @@ export function AssessmentIntake() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
                 <path d="M20 6L9 17l-5-5" />
               </svg>
-              Your full readiness score, across all six categories
+              Your Preliminary Readiness Score, across all six categories
             </li>
             <li>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
@@ -98,7 +98,7 @@ export function AssessmentIntake() {
           </div>
 
           <label className={styles.consent}>
-            <input type="checkbox" name="consent" required />I agree to receive my Initial Intent Score and related
+            <input type="checkbox" name="consent" required />I agree to receive my Preliminary Readiness Intent Score and related
             communications from Misconi USA. This score is preliminary and self-reported — it is separate from,
             and not a substitute for, the Verified Readiness Score.
           </label>

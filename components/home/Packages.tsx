@@ -70,7 +70,7 @@ const TIERS: Tier[] = [
   {
     wrapClass: styles.pkgOpportunity,
     level: "Readiness Tier 3",
-    title: "Opportunity Preparation",
+    title: "Optimization",
     price: "$1,997",
     mandate: "Mandate: Prepare verified capability for a defined opportunity.",
     gate: "Does the verified business meet the requirements of this opportunity?",
@@ -89,7 +89,7 @@ const TIERS: Tier[] = [
       "Controlled Preparation Decision",
     ],
     result: "Qualified, conditional, hold, or not-ready decision. Opportunity routing requires separate authorization.",
-    ctaLabel: "Begin Opportunity Preparation",
+    ctaLabel: "Begin Optimization",
     boundary: "Opportunity Ready is an earned, verified status. It is not automatically included with purchase.",
   },
 ];

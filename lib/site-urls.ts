@@ -23,3 +23,14 @@ export const SITE_URLS = {
   subscribeBasic: `${misconiUsa}/subscribe?tier=basic`,
   subscribeEnterprise: `${misconiUsa}/subscribe?tier=enterprise`,
 } as const;
+
+/** Public marketing / funnel links. Prefer these over hard-coded hrefs. */
+export const LINKS = {
+  // TODO(client): consultation booking URL
+  consultation: '',
+} as const;
+
+/** Consultation CTA href — booking URL when set, otherwise the contact page. */
+export function consultationHref(): string {
+  return LINKS.consultation || '/contact';
+}

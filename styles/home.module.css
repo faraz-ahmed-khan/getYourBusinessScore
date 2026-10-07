@@ -87,22 +87,98 @@
   .uItem p{ color:var(--ink-soft); font-size:.96rem; }
 
   /* ---------- Journey steps ---------- */
+  .journey{ background:var(--cream); }
   .journey .wrap{ }
-  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; align-items:start; position:relative; }
-  .step{ text-align:center; padding:0 18px; position:relative; }
+  .steps{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:48px 0;
+    align-items:start;
+    position:relative;
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .step{ text-align:center; padding:0 14px; position:relative; }
   .stepBadge{
     width:46px; height:46px; border-radius:50%; background:var(--red); color:#fff;
     display:flex; align-items:center; justify-content:center; margin:0 auto 18px;
     font-family:var(--serif); font-weight:700; font-size:1.15rem;
     box-shadow:0 6px 14px rgba(165,28,44,.28);
+    position:relative;
+    z-index:1;
   }
   .stepIcon{ width:52px; height:52px; margin:0 auto 14px; color:var(--navy-800); }
-  .step h4{ font-size:1.08rem; margin-bottom:8px; }
-  .step p{ color:var(--ink-soft); font-size:.94rem; }
+  .step h3{
+    font-family:var(--serif);
+    font-size:1.08rem;
+    font-weight:700;
+    margin:0 0 8px;
+    min-height:2.6em;
+    line-height:1.3;
+  }
+  .step p{ color:var(--ink-soft); font-size:.94rem; margin:0; line-height:1.45; }
   .stepArrow{ position:absolute; top:23px; right:-10%; width:20%; color:var(--gold); opacity:.7; }
+  .stepDownArrow{
+    display:none;
+    position:absolute;
+    left:50%;
+    bottom:-40px;
+    transform:translateX(-50%);
+    width:18px;
+    height:36px;
+    color:var(--gold);
+    opacity:.7;
+  }
   .journeyFoot{
     text-align:center; margin-top:34px; padding-top:22px; border-top:1px solid var(--line);
-    color:var(--ink-soft); font-size:.9rem;
+    color:var(--ink-soft); font-size:.9rem; max-width:720px; margin-left:auto; margin-right:auto;
+  }
+
+  @media (min-width:1024px){
+    /* .stepDownArrow{ display:block; } */
+  }
+
+  /* Tablet: 2 columns, numbered order, no arrows */
+  @media (max-width:1023px) and (min-width:768px){
+    .steps{ grid-template-columns:repeat(2,1fr); gap:32px 28px; }
+    .step{ padding:0 12px; }
+    .stepArrow, .stepDownArrow{ display:none; }
+    .step h3{ min-height:0; }
+  }
+
+  /* Mobile: vertical timeline */
+  @media (max-width:767px){
+    .steps{
+      grid-template-columns:1fr;
+      gap:0;
+      max-width:100%;
+    }
+    .step{
+      display:grid;
+      grid-template-columns:46px minmax(0,1fr);
+      column-gap:16px;
+      row-gap:6px;
+      text-align:left;
+      padding:0 0 28px;
+      align-items:start;
+    }
+    .step:last-child{ padding-bottom:0; }
+    .step::before{
+      content:"";
+      position:absolute;
+      left:22px;
+      top:46px;
+      bottom:0;
+      width:2px;
+      background:var(--gold);
+      opacity:.55;
+    }
+    .step:last-child::before{ display:none; }
+    .stepBadge{ margin:0; grid-row:1 / span 2; }
+    .step h3{ min-height:0; grid-column:2; }
+    .step p{ grid-column:2; }
+    .stepArrow, .stepDownArrow{ display:none; }
   }
 
   /* ---------- Assessment form ---------- */
@@ -266,9 +342,8 @@
 
   @media (max-width:900px){
     .heroGrid, .assess .wrap, .leader .wrap{ grid-template-columns:1fr; }
-    .uGrid, .steps, .pkgGrid, .fieldRow{ grid-template-columns:1fr; }
+    .uGrid, .pkgGrid, .fieldRow{ grid-template-columns:1fr; }
     nav.mainNav{ display:none; }
     .siteBar{ justify-content:space-between; }
-    .stepArrow{ display:none; }
     .leaderPhoto{ max-width:320px; margin:0 auto; }
   }

@@ -64,5 +64,5 @@ export const PATHWAY_DESCRIPTIONS: Record<PathwayOption, string> = {
   sba: 'Foundational readiness support for businesses building documentation, operations, and financial structure.',
   supplier: 'Visibility and partner-readiness support for businesses with stable operations and documentation.',
   subscription:
-    'Subscription options appear only after your Initial Business Score and support your readiness development.',
+    'Subscription options appear only after your Preliminary Readiness Score and support your readiness development.',
 };

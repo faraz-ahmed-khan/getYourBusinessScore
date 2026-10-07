@@ -21,7 +21,7 @@ export function SiteFooter() {
         </div>
         <p className={styles.footLegal}>
           GYBS — Get Your Business Score is a Misconi USA Readiness System. GYBS evaluates and prepares; it does
-          not guarantee or approve third-party funding, contracting, or opportunity outcomes. The Initial Intent
+          not guarantee or approve third-party funding, contracting, or opportunity outcomes. The Preliminary Intent
           Score is preliminary and self-reported. A Verified Readiness Score requires GYBS review and supporting
           documentation. &copy; Misconi USA. All rights reserved.
         </p>

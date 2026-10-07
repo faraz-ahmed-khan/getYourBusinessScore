@@ -10,6 +10,7 @@ import { computeResults, getTier, TIPS } from '@/lib/scoring';
 import { TOTAL_QUESTIONS } from '@/lib/questions';
 import { clearAnswers, loadAnswers } from '@/lib/storage';
 import { GYBS_SCORE_RESULT_KEY } from '@/lib/pathways';
+import { consultationHref } from '@/lib/site-urls';
 import type { Results } from '@/lib/types';
 import styles from '@/styles/results.module.css';
 
@@ -156,7 +157,7 @@ export function ResultsClient() {
           <NextStepCard band={results.band} />
           <p className={styles.callLine}>
             Want help walking through this?{' '}
-            <a href="mailto:hello@misconiusa.com">Book a free readiness call</a>
+            <a href={consultationHref()}>Book Your Consultation</a>
           </p>
         </div>
       </section>

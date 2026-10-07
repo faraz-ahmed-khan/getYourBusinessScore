@@ -5,7 +5,7 @@ export function HowItWorks() {
     <section className={`${styles.section} ${styles.understand}`} id="how-it-works">
       <div className={styles.wrap}>
         <div className={styles.sectionHead}>
-          <p className={styles.eyebrow}>What Your Initial Results Help You Understand</p>
+          <p className={styles.eyebrow}>What Your Preliminary Readiness Results Help You Understand</p>
           <h2>Clarity before opportunity — not after</h2>
         </div>
         <div className={styles.uGrid}>

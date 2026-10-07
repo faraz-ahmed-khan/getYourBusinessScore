@@ -28,7 +28,7 @@ export function Hero() {
         </div>
 
         <div className={styles.scoreCard} aria-label="Sample preliminary readiness score">
-          <p className={`${styles.eyebrow} ${styles.kicker}`}>Sample Initial Readiness Score</p>
+          <p className={`${styles.eyebrow} ${styles.kicker}`}>Sample Preliminary Readiness Score</p>
           <h3>Preliminary Readiness Score</h3>
           <div className={styles.gaugeWrap}>
             <svg width="220" height="130" viewBox="0 0 220 130">

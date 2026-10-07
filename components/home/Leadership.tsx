@@ -37,7 +37,7 @@ export function Leadership() {
           </p>
 
           <p className={styles.bio}>
-            Under his leadership, Misconi USA holds every tier of the GYBS system — from the Initial Readiness
+            Under his leadership, Misconi USA holds every tier of the GYBS system — from the Preliminary Readiness
             Score to full opportunity preparation — to the same standard: honest measurement, controlled scope,
             and no promises the business hasn&apos;t actually earned. That discipline is the reason a GYBS score
             means something. It is not a guarantee of funding, contracts, or approval; it is a clear, defensible

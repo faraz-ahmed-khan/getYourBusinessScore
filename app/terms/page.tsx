@@ -72,7 +72,7 @@ export default function TermsPage() {
             readiness status, or preparation plan may also change.
           </p>
           <p>
-            An initial assessment result is based on submitted answers and may be preliminary. Some
+            A Preliminary Readiness assessment result is based on submitted answers and may be preliminary. Some
             readiness decisions require documents, supporting information, or additional review
             before they can be confirmed. A preliminary result is not verified readiness. A verified
             readiness result is issued only after the required review and supporting evidence have

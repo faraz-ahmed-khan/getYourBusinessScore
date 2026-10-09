@@ -291,12 +291,70 @@
   .pkgResult{ font-size:.84rem; padding:9px 10px; background:#fff5e9; color:#78451f; margin-top:10px; border-radius:6px; }
   .pkgAction{ margin-top:auto; padding-top:16px; }
   .pkgBtn{
-    display:block; text-align:center; padding:12px 14px; border-radius:7px;
+    display:block; width:100%; text-align:center; padding:12px 14px; border-radius:7px;
+    border:0; cursor:pointer;
     background:var(--navy-900); color:#fff; text-decoration:none; font-weight:600; font-size:.9rem;
   }
   .pkgBtn:hover{ background:var(--navy-800); }
   .pkgBoundary{ font-size:.76rem; color:var(--ink-soft); margin-top:10px; }
   .pkgBoundary strong{ color:var(--navy-800); }
+
+  /* ---------- Package interest modal ---------- */
+  .pkgModalOverlay{
+    position:fixed; inset:0; z-index:80;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    background:rgba(13,35,64,.55);
+  }
+  .pkgModal{
+    position:relative;
+    width:min(440px,100%);
+    max-height:min(90vh,640px);
+    overflow:auto;
+    background:var(--paper);
+    border-radius:12px;
+    border:1px solid var(--line-cool);
+    box-shadow:0 18px 48px rgba(23,54,82,.28);
+    padding:28px 26px 24px;
+  }
+  .pkgModal h2{
+    font-family:var(--serif);
+    font-size:1.45rem;
+    color:var(--navy-900);
+    margin:0 0 8px;
+    padding-right:28px;
+  }
+  .pkgModalSub{
+    color:var(--ink-soft);
+    font-size:.92rem;
+    margin:0 0 20px;
+  }
+  .pkgModalClose{
+    position:absolute; top:12px; right:12px;
+    width:36px; height:36px;
+    border:0; border-radius:8px;
+    background:transparent;
+    color:var(--navy-800);
+    font-size:1.6rem; line-height:1;
+    cursor:pointer;
+  }
+  .pkgModalClose:hover{ background:var(--navy-100); }
+  .pkgModalClose:disabled{ opacity:.5; cursor:not-allowed; }
+  .pkgModalError{
+    color:#9b1c1c;
+    background:#fde8e8;
+    border-radius:6px;
+    padding:10px 12px;
+    font-size:.86rem;
+    margin:0 0 14px;
+  }
+  .pkgModalSuccess p{
+    color:var(--ink-soft);
+    font-size:.95rem;
+    margin:0 0 20px;
+    line-height:1.5;
+  }
+  .pkgModalSuccess strong{ color:var(--navy-800); }
 
   /* ---------- Governance ---------- */
   .governance{ background:var(--navy-100); border-top:1px solid var(--line-cool); border-bottom:1px solid var(--line-cool); padding:64px 0; }

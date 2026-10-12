@@ -63,6 +63,8 @@ export function PackageInterestModal({
           name: String(data.get('name') ?? ''),
           email: String(data.get('email') ?? ''),
           phone: String(data.get('phone') ?? ''),
+          businessName: String(data.get('businessName') ?? ''),
+          message: String(data.get('message') ?? ''),
           packageTitle,
           packagePrice,
         }),
@@ -162,6 +164,28 @@ export function PackageInterestModal({
                 type="tel"
                 autoComplete="tel"
                 required
+                disabled={submitting}
+              />
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="pkg-business">Business name</label>
+              <input
+                id="pkg-business"
+                name="businessName"
+                type="text"
+                autoComplete="organization"
+                required
+                disabled={submitting}
+              />
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="pkg-message">Message</label>
+              <textarea
+                id="pkg-message"
+                name="message"
+                rows={4}
                 disabled={submitting}
               />
             </div>

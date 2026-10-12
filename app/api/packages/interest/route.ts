@@ -6,6 +6,8 @@ type Body = {
   name?: string;
   email?: string;
   phone?: string;
+  businessName?: string;
+  message?: string;
   packageTitle?: string;
   packagePrice?: string;
 };
@@ -33,6 +35,7 @@ function validateBody(body: Body): string[] {
   }
 
   if (!body.phone?.trim()) errors.push('Phone is required');
+  if (!body.businessName?.trim()) errors.push('Business Name is required');
 
   const packageTitle = body.packageTitle?.trim() || '';
   if (!packageTitle) {
@@ -52,8 +55,10 @@ function validateBody(body: Body): string[] {
  * - Name (name)
  * - Email
  * - Phone_Number
+ * - Business_Name
+ * - Message (multi-line)
  * - Package (dropdown: Foundation | Capability | Optimization)
- * - Package_Price (optional single line)
+ * - Package_Price (single line)
  */
 export async function POST(request: Request) {
   try {
@@ -78,6 +83,8 @@ export async function POST(request: Request) {
     const name = body.name!.trim();
     const email = body.email!.trim();
     const phone = body.phone!.trim();
+    const businessName = body.businessName!.trim();
+    const message = body.message?.trim() || '';
     const packageTitle = body.packageTitle!.trim();
 
     // Prefer server-side price for the selected package (authoritative).
@@ -89,9 +96,13 @@ export async function POST(request: Request) {
       Name: toZohoNameParts(name),
       Email: email,
       Phone_Number: phone,
+      Business_Name: businessName,
       Package: packageTitle,
       Package_Price: packagePrice,
     };
+    if (message) {
+      zohoRecord.Message = message;
+    }
 
     const zohoPayload = { data: [zohoRecord] };
 

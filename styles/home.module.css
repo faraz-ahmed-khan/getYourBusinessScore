@@ -214,11 +214,12 @@
   .fieldRow{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .field{ margin-bottom:14px; }
   .field label{ display:block; font-size:.8rem; font-weight:600; color:var(--navy-800); margin-bottom:6px; }
-  .field input, .field select{
+  .field input, .field select, .field textarea{
     width:100%; padding:11px 12px; border:1px solid var(--line-cool); border-radius:7px;
     font-family:var(--sans); font-size:.94rem; background:#fff; color:var(--ink);
   }
-  .field input:focus, .field select:focus{ border-color:var(--orange-bright); }
+  .field textarea{ resize:vertical; min-height:96px; }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--orange-bright); }
   .consent{ display:flex; gap:9px; align-items:flex-start; font-size:.8rem; color:var(--ink-soft); margin:14px 0 18px; }
   .consent input{ margin-top:3px; }
   .formSubmit{ width:100%; justify-content:center; }

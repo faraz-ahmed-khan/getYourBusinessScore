@@ -45,7 +45,7 @@ export const PACKAGE_TIERS: PackageTier[] = [
       'Foundation Completion Report',
     ],
     result: 'Documented completed actions, unresolved gaps, and an approved next-step recommendation.',
-    ctaLabel: 'Begin Foundation Preparation',
+    ctaLabel: 'Request Next Steps',
     boundary: 'Does not verify delivery capability or qualify the business for a specific opportunity.',
   },
   {

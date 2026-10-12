@@ -6,7 +6,7 @@ export function HowItWorks() {
       <div className={styles.wrap}>
         <div className={styles.sectionHead}>
           <p className={styles.eyebrow}>What Your Preliminary Readiness Results Help You Understand</p>
-          <h2>Clarity before opportunity — not after</h2>
+          <h2>Clarity before opportunity</h2>
         </div>
         <div className={styles.uGrid}>
           <div className={styles.uItem}>

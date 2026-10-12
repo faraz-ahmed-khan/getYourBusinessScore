@@ -88,7 +88,7 @@ export function ResultsClient() {
 
       <section className={styles.scoreHero}>
         <div className={styles.shInner}>
-          <p className={styles.eyebrow}>Your Initial Readiness Score</p>
+          <p className={styles.eyebrow}>Your Preliminary Readiness Score</p>
           <ScoreGauge score={results.readinessScore} color={results.band.color} />
           <div className={styles.bandPill}>
             <span className={styles.dot} style={{ background: results.band.color }} />

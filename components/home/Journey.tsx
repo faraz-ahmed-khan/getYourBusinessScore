@@ -2,14 +2,14 @@ import styles from "@/styles/home.module.css";
 
 const STEPS = [
   {
-    title: "Complete the Initial Assessment",
+    title: "Complete the Preliminary Assessment",
     description:
       "Answer a short set of questions about your business — it takes about ten minutes.",
   },
   {
     title: "Receive Your Preliminary Score",
     description:
-      "Get an initial readiness view based on your responses, plus your top gap areas.",
+      "Get an Preliminary readiness view based on your responses, plus your top gap areas.",
   },
   {
     title: "Opt In to a Consultation",
@@ -98,7 +98,7 @@ export function Journey() {
           })}
         </ol>
         <p className={styles.journeyFoot}>
-          Initial results are based on self-reported information. A Verified Readiness Score requires
+          Preliminary results are based on self-reported information. A Verified Readiness Score requires
           GYBS review and supporting documentation. Purchased services begin only after payment is
           confirmed.
         </p>
